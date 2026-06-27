@@ -4,9 +4,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { env } from "@/config/env";
 import { AppError } from "@/lib/errors";
 
-const GEMINI_MODEL = "gemini-1.5-flash" as const;
+const GEMINI_MODEL = "gemini-2.0-flash-001" as const;
 
-const MAX_OUTPUT_TOKENS = 8192;
+const MAX_OUTPUT_TOKENS = 65536;
 const DEFAULT_TEMPERATURE = 0.7;
 
 interface GeminiRequest {
@@ -58,7 +58,6 @@ export async function generateContent(
 
     const message =
       error instanceof Error ? error.message : "Unknown Gemini API error";
-
     throw AppError.generationFailed(
       `Gemini API call failed: ${message}`,
       { model: GEMINI_MODEL, promptLength: request.userPrompt.length }
