@@ -1,12 +1,12 @@
 // lib/gemini.ts — Gemini Flash client: typed generateContent wrapper
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { env } from "@/config/env";
 import { AppError } from "@/lib/errors";
 
-const GEMINI_MODEL = "gemini-2.0-flash-001" as const;
+const GEMINI_MODEL = "gemini-2.5-flash" as const;
 
-const MAX_OUTPUT_TOKENS = 65536;
+const MAX_OUTPUT_TOKENS = 8192;
 const DEFAULT_TEMPERATURE = 0.7;
 
 interface GeminiRequest {
@@ -20,28 +20,28 @@ interface GeminiResponse {
   readonly text: string;
 }
 
-function getClient(): GoogleGenerativeAI {
-  return new GoogleGenerativeAI(env.GEMINI_API_KEY);
+function getClient(): GoogleGenAI {
+  return new GoogleGenAI({ apiKey: env.GEMINI_API_KEY });
 }
 
 export async function generateContent(
   request: GeminiRequest
 ): Promise<GeminiResponse> {
-  const client = getClient();
-
-  const model = client.getGenerativeModel({
-    model: GEMINI_MODEL,
-    systemInstruction: request.systemPrompt,
-    generationConfig: {
-      temperature: request.temperature ?? DEFAULT_TEMPERATURE,
-      maxOutputTokens: request.maxOutputTokens ?? MAX_OUTPUT_TOKENS,
-      responseMimeType: "application/json",
-    },
-  });
+  const ai = getClient();
 
   try {
-    const result = await model.generateContent(request.userPrompt);
-    const text = result.response.text();
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: request.userPrompt,
+      config: {
+        systemInstruction: request.systemPrompt,
+        responseMimeType: "application/json",
+        temperature: request.temperature ?? DEFAULT_TEMPERATURE,
+        maxOutputTokens: request.maxOutputTokens ?? MAX_OUTPUT_TOKENS,
+      },
+    });
+
+    const text = response.text ?? "";
 
     if (!text.trim()) {
       throw AppError.generationFailed(
