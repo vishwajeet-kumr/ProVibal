@@ -1,6 +1,6 @@
 "use client";
 
-// components/copy-button.tsx — Clipboard copy with visual success/error feedback state
+// components/copy-button.tsx — Clipboard copy with visual feedback — warm design system
 
 import { useState, useEffect, useRef } from "react";
 import { Copy, Check, X } from "lucide-react";
@@ -19,22 +19,18 @@ export function CopyButton({ text }: CopyButtonProps) {
 
   useEffect(() => {
     return () => {
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
-      }
+      if (timerRef.current !== null) clearTimeout(timerRef.current);
     };
   }, []);
 
   async function handleCopy() {
     if (state !== "idle") return;
-
     try {
       await navigator.clipboard.writeText(text);
       setState("copied");
     } catch {
       setState("error");
     }
-
     timerRef.current = setTimeout(() => {
       setState("idle");
       timerRef.current = null;
@@ -43,19 +39,19 @@ export function CopyButton({ text }: CopyButtonProps) {
 
   const config = {
     idle: {
-      icon: <Copy size={14} />,
+      icon: <Copy size={13} />,
       label: "Copy",
-      className: "text-slate-400 hover:text-slate-200 hover:bg-white/10",
+      className: "border border-[#E2D9CF] text-[#6B6457] hover:bg-[#EDE5DA] hover:text-[#111111]",
     },
     copied: {
-      icon: <Check size={14} />,
+      icon: <Check size={13} />,
       label: "Copied!",
-      className: "text-emerald-400 bg-emerald-400/10",
+      className: "border border-green-200 bg-green-50 text-green-700",
     },
     error: {
-      icon: <X size={14} />,
+      icon: <X size={13} />,
       label: "Failed",
-      className: "text-red-400 bg-red-400/10",
+      className: "border border-red-200 bg-red-50 text-red-600",
     },
   } satisfies Record<CopyState, { icon: React.ReactNode; label: string; className: string }>;
 

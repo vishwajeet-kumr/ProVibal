@@ -1,6 +1,6 @@
 "use client";
 
-// components/navbar.tsx — Global navigation header
+// components/navbar.tsx — Global navigation header — warm white + brown + black
 
 import Link from "next/link";
 import { useAuth, UserButton } from "@clerk/nextjs";
@@ -14,7 +14,7 @@ export function Navbar() {
   const { userId } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.06] bg-slate-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-[#E2D9CF] bg-white">
       <nav
         className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
         aria-label="Global"
@@ -22,42 +22,73 @@ export function Navbar() {
         {/* Logo */}
         <Link
           href="/"
-          className="text-lg font-extrabold tracking-tight text-violet-400 transition-opacity hover:opacity-80"
+          className="font-serif text-xl font-bold tracking-tight text-[#111111] transition-opacity hover:opacity-70"
         >
           Promptra
         </Link>
 
-        {/* Nav links + auth — flex row, wraps cleanly on small screens */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        {/* Center nav links */}
+        <div className="hidden items-center gap-1 sm:flex">
           {NAV_LINKS.map(({ label, href }) => (
             <Link
               key={href}
               href={href}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
+              className="rounded-lg px-3 py-1.5 text-sm font-medium text-[#6B6457] transition-colors hover:text-[#111111]"
             >
               {label}
             </Link>
           ))}
+        </div>
 
-          <div className="ml-2 h-4 w-px bg-white/10" aria-hidden="true" />
-
+        {/* Right auth area */}
+        <div className="flex items-center gap-3">
           {userId ? (
-            <div className="ml-2">
+            <>
+              {/* Mobile nav links when signed in */}
+              <div className="flex items-center gap-1 sm:hidden">
+                {NAV_LINKS.map(({ label, href }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-[#6B6457] hover:text-[#111111]"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
               <UserButton
                 appearance={{
-                  elements: {
-                    avatarBox: "h-7 w-7",
-                  },
+                  elements: { avatarBox: "h-7 w-7" },
                 }}
               />
-            </div>
+            </>
           ) : (
-            <Link
-              href="/sign-in"
-              className="ml-1 rounded-lg bg-violet-600 px-4 py-1.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-violet-500"
-            >
-              Sign In
-            </Link>
+            <>
+              {/* Mobile nav links when signed out */}
+              <div className="flex items-center gap-1 sm:hidden">
+                {NAV_LINKS.map(({ label, href }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="rounded-lg px-2.5 py-1.5 text-sm font-medium text-[#6B6457] hover:text-[#111111]"
+                  >
+                    {label}
+                  </Link>
+                ))}
+              </div>
+              <Link
+                href="/sign-in"
+                className="text-sm font-medium text-[#6B6457] transition-colors hover:text-[#111111]"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/generate"
+                className="rounded-lg bg-[#8C6A4A] px-4 py-1.5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#7A5C3E]"
+              >
+                Get Started
+              </Link>
+            </>
           )}
         </div>
       </nav>

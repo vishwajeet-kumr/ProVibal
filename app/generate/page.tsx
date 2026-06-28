@@ -1,6 +1,6 @@
 "use client";
 
-// app/generate/page.tsx — Main generator page: form input + prompt kit output display
+// app/generate/page.tsx — Main generator page — warm design system
 
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
@@ -27,9 +27,7 @@ export default function GeneratePage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-
       const json = (await response.json()) as ApiGenerateResponse;
-
       if (json.status === "success" && json.data) {
         setKit(json.data);
       } else {
@@ -43,17 +41,15 @@ export default function GeneratePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950">
+    <main className="min-h-screen bg-[#F7F4F0]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Page heading */}
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h1 className="font-serif text-4xl font-normal tracking-tight text-[#111111] sm:text-5xl">
             Generate Your{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-              Prompt Kit
-            </span>
+            <span className="italic text-[#8C6A4A]">Prompt Kit</span>
           </h1>
-          <p className="mt-3 text-slate-400">
+          <p className="mt-3 text-base text-[#6B6457]">
             Describe your project and get a complete vibe coding prompt kit instantly.
           </p>
         </div>
@@ -61,35 +57,32 @@ export default function GeneratePage() {
         {kit === null ? (
           /* Pre-generation: centered form */
           <div className="mx-auto max-w-2xl">
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-8">
+            <div className="rounded-2xl border border-[#E2D9CF] bg-white p-8 shadow-sm">
               <GeneratorForm onSubmit={handleSubmit} isLoading={isLoading} />
             </div>
           </div>
         ) : (
           /* Post-generation: two-column layout */
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[380px_1fr]">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
             {/* Left: collapsed form */}
-            <div className="h-fit rounded-2xl border border-white/10 bg-slate-900/60 p-6">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-slate-500">
+            <div className="h-fit rounded-2xl border border-[#E2D9CF] bg-white p-6 shadow-sm">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-widest text-[#6B6457]">
                 Regenerate
               </p>
               <GeneratorForm onSubmit={handleSubmit} isLoading={isLoading} />
             </div>
 
             {/* Right: tabbed output */}
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-white">
+            <div className="rounded-2xl border border-[#E2D9CF] bg-white p-6 shadow-sm">
+              <div className="mb-5 flex items-center justify-between border-b border-[#E2D9CF] pb-4">
+                <h2 className="font-serif text-lg font-normal text-[#111111]">
                   {kit.projectName}
                 </h2>
-                <span className="rounded-full bg-violet-500/15 px-3 py-0.5 text-xs font-medium text-violet-400">
+                <span className="rounded-full bg-[#EDE5DA] px-3 py-0.5 text-xs font-medium text-[#8C6A4A]">
                   {kit.projectType}
                 </span>
               </div>
-              <PromptKitOutput
-                kit={kit}
-                isAuthenticated={!!userId}
-              />
+              <PromptKitOutput kit={kit} isAuthenticated={!!userId} />
             </div>
           </div>
         )}

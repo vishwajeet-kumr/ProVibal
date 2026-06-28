@@ -1,6 +1,6 @@
 "use client";
 
-// components/generator-form.tsx — React Hook Form + Zod resolver for project description input
+// components/generator-form.tsx — React Hook Form + Zod resolver — warm design system
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,9 +40,9 @@ const TECH_STACK_LABELS: Record<(typeof TECH_STACK_OPTIONS)[number], string> = {
 } satisfies Record<(typeof TECH_STACK_OPTIONS)[number], string>;
 
 const fieldClass =
-  "w-full rounded-lg border border-white/10 bg-slate-800/60 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40";
-const labelClass = "mb-1.5 block text-sm font-medium text-slate-300";
-const errorClass = "mt-1.5 text-xs text-red-400";
+  "w-full rounded-lg border border-[#E2D9CF] bg-white px-4 py-2.5 text-sm text-[#111111] placeholder-[#6B6457]/50 outline-none transition focus:border-[#8C6A4A] focus:ring-1 focus:ring-[#8C6A4A]/30";
+const labelClass = "mb-1.5 block text-sm font-medium text-[#111111]";
+const errorClass = "mt-1.5 text-xs text-red-600";
 
 export function GeneratorForm({ onSubmit, isLoading }: GeneratorFormProps) {
   const {
@@ -82,7 +82,7 @@ export function GeneratorForm({ onSubmit, isLoading }: GeneratorFormProps) {
         <textarea
           id="description"
           rows={4}
-          placeholder="Describe what your app does, who it's for, and the key features you want. The more detail you give, the better the generated prompts."
+          placeholder="Describe what your app does, who it's for, and the key features you want. The more detail, the better the generated prompts."
           className={`${fieldClass} resize-y`}
           {...register("description")}
         />
@@ -91,20 +91,16 @@ export function GeneratorForm({ onSubmit, isLoading }: GeneratorFormProps) {
         )}
       </div>
 
-      {/* Project Type + Tech Stack side by side */}
+      {/* Project Type + Tech Stack */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="projectType" className={labelClass}>
             Project Type
           </label>
           <select id="projectType" className={fieldClass} {...register("projectType")}>
-            <option value="" disabled>
-              Select type…
-            </option>
+            <option value="" disabled>Select type…</option>
             {PROJECT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {PROJECT_TYPE_LABELS[type]}
-              </option>
+              <option key={type} value={type}>{PROJECT_TYPE_LABELS[type]}</option>
             ))}
           </select>
           {errors.projectType && (
@@ -118,9 +114,7 @@ export function GeneratorForm({ onSubmit, isLoading }: GeneratorFormProps) {
           </label>
           <select id="techStack" className={fieldClass} {...register("techStack")}>
             {TECH_STACK_OPTIONS.map((stack) => (
-              <option key={stack} value={stack}>
-                {TECH_STACK_LABELS[stack]}
-              </option>
+              <option key={stack} value={stack}>{TECH_STACK_LABELS[stack]}</option>
             ))}
           </select>
           {errors.techStack && (
@@ -133,7 +127,7 @@ export function GeneratorForm({ onSubmit, isLoading }: GeneratorFormProps) {
       <button
         type="submit"
         disabled={isLoading}
-        className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-violet-600 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition-all duration-150 hover:bg-violet-500 hover:shadow-violet-500/40 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#8C6A4A] py-3 text-sm font-semibold text-white shadow-sm shadow-[#8C6A4A]/20 transition-all duration-150 hover:bg-[#7A5A3C] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isLoading ? (
           <>

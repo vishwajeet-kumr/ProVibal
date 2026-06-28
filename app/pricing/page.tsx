@@ -1,6 +1,6 @@
 "use client";
 
-// app/pricing/page.tsx — Plan comparison: Free vs Pro, Razorpay checkout trigger
+// app/pricing/page.tsx — Plan comparison: Free vs Pro — warm design system
 
 import { useRouter } from "next/navigation";
 import { useAuth } from "@clerk/nextjs";
@@ -38,26 +38,16 @@ export default function PricingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 px-4 py-20 sm:px-6 lg:px-8">
-      {/* Ambient glow */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-32 -translate-x-1/2"
-      >
-        <div className="h-96 w-96 rounded-full bg-violet-600/10 blur-3xl" />
-      </div>
-
+    <main className="min-h-screen bg-[#F7F4F0] px-4 py-20 sm:px-6 lg:px-8">
       <div className="relative mx-auto max-w-4xl">
         {/* Heading */}
         <div className="mb-14 text-center">
-          <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+          <h1 className="font-serif text-5xl font-normal tracking-tight text-[#111111] sm:text-6xl">
             Simple,{" "}
-            <span className="bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-              Honest
-            </span>{" "}
+            <span className="italic text-[#8C6A4A]">Honest</span>{" "}
             Pricing
           </h1>
-          <p className="mt-4 text-base text-slate-400">
+          <p className="mt-4 text-base text-[#6B6457]">
             Start free. Upgrade when you need more firepower.
           </p>
         </div>
@@ -85,7 +75,7 @@ export default function PricingPage() {
         </div>
 
         {/* Footer note */}
-        <p className="mt-10 text-center text-sm text-slate-600">
+        <p className="mt-10 text-center text-sm text-[#6B6457]">
           All prices in INR · Cancel anytime · No hidden fees
         </p>
       </div>
