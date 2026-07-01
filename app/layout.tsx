@@ -5,6 +5,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Navbar } from "@/components/navbar";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const inter = Inter({
@@ -41,12 +42,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
+        suppressHydrationWarning
         className={`${inter.variable} ${instrumentSerif.variable} ${jetBrainsMono.variable} h-full antialiased`}
       >
-        <body className="bg-[#F7F4F0]">
-          <Navbar />
-          {children}
-          <Toaster position="bottom-right" richColors />
+        <body className="bg-[#F7F4F0] transition-colors dark:bg-[#0A0A0A]">
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <Navbar />
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

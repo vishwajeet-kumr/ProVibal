@@ -4,17 +4,40 @@
 
 import Link from "next/link";
 import { useAuth, UserButton } from "@clerk/nextjs";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const NAV_LINKS = [
   { label: "Generate", href: "/generate" },
   { label: "Pricing", href: "/pricing" },
 ] as const;
 
+function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <div className="h-8 w-8" />;
+  }
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="rounded-lg p-1.5 text-[#6B6457] transition-colors hover:bg-[#EDE5DA] hover:text-[#111111] dark:hover:bg-[#333] dark:hover:text-white"
+    >
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+    </button>
+  );
+}
+
 export function Navbar() {
   const { userId } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#E2D9CF] bg-white">
+    <header className="sticky top-0 z-50 border-b border-[#E2D9CF] bg-white transition-colors dark:border-[#333] dark:bg-black">
       <nav
         className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
         aria-label="Global"
@@ -42,6 +65,7 @@ export function Navbar() {
 
         {/* Right auth area */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {userId ? (
             <>
               {/* Mobile nav links when signed in */}
