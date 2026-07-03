@@ -2,13 +2,13 @@
 
 // components/prompt-kit-output.tsx — Tabbed output — warm design system
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FileText, Map, Layers, Zap } from "lucide-react";
 import type { PromptKit } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
 import { PaywallGate } from "@/components/paywall-gate";
 
-type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
+export type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
 
 interface Tab {
   readonly id: TabId;
@@ -34,6 +34,7 @@ const FOUNDATION_SECTION_LABELS = {
 interface PromptKitOutputProps {
   readonly kit: PromptKit;
   readonly isAuthenticated: boolean;
+  readonly defaultTab?: TabId;
 }
 
 const sectionClass = "rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5";
@@ -194,8 +195,12 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
   );
 }
 
-export function PromptKitOutput({ kit, isAuthenticated }: PromptKitOutputProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("foundation");
+export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitOutputProps) {
+  const [activeTab, setActiveTab] = useState<TabId>(defaultTab ?? "foundation");
+
+  useEffect(() => {
+    if (defaultTab) setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   return (
     <div className="flex flex-col">

@@ -17,7 +17,7 @@ function extractIp(request: Request): string {
   return "unknown";
 }
 
-export async function POST(request: Request): Promise<NextResponse> {
+export async function POST(request: Request): Promise<Response> {
   try {
     const ip = extractIp(request);
 

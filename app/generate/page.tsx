@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
+import Link from "next/link";
+import { Zap, Loader2 } from "lucide-react";
 import { GeneratorForm } from "@/components/generator-form";
 import { PromptKitOutput } from "@/components/prompt-kit-output";
+import type { TabId } from "@/components/prompt-kit-output";
 import { GenerationLoader } from "@/components/generation-loader";
-import { ExportButton } from "@/components/export-button";
-import type { PromptKit, ProjectInput } from "@/features/generator/generator.types";
+import type { PromptKit, ProjectInput, FollowUpChain } from "@/features/generator/generator.types";
 
 interface ApiGenerateResponse {
   status: "success" | "error";
@@ -15,7 +17,11 @@ interface ApiGenerateResponse {
   error?: string;
 }
 
-const CACHE_KEY = "promptra_cached_kit";
+interface ApiFollowUpResponse {
+  status: "success" | "error";
+  data?: FollowUpChain;
+  error?: string;
+}
 
 function PageHeading() {
   return (
@@ -30,15 +36,72 @@ function PageHeading() {
   );
 }
 
+interface FollowUpCTAProps {
+  readonly userId: string | null | undefined;
+  readonly followUpLoading: boolean;
+  readonly onGenerate: () => void;
+}
+
+function FollowUpCTA({ userId, followUpLoading, onGenerate }: FollowUpCTAProps) {
+  return (
+    <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-sm text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-light)]">
+        <Zap size={22} className="text-[var(--accent)]" />
+      </div>
+      <h3 className="mb-2 font-serif text-lg text-[var(--text-primary)]">
+        Unlock Follow-up Prompts
+      </h3>
+      <p className="mx-auto mb-5 max-w-sm text-sm text-[var(--text-muted)]">
+        Get 8 production-hardening prompts — debug, optimize, secure, and deploy
+      </p>
+      {!userId ? (
+        <Link
+          href="/sign-in"
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-5 py-2 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--accent-light)]"
+        >
+          Sign in to generate
+        </Link>
+      ) : (
+        <button
+          onClick={onGenerate}
+          disabled={followUpLoading}
+          className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#7A5C3E] disabled:opacity-60"
+        >
+          {followUpLoading ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Generating…
+            </>
+          ) : (
+            "Generate Follow-up Chain"
+          )}
+        </button>
+      )}
+    </div>
+  );
+}
+
 interface PostGenerationProps {
   readonly kit: PromptKit;
   readonly userId: string | null | undefined;
   readonly isLoading: boolean;
+  readonly followUpLoading: boolean;
+  readonly outputTab: TabId;
   readonly onClear: () => void;
   readonly onSubmit: (data: ProjectInput) => Promise<void>;
+  readonly onGenerateFollowUps: () => void;
 }
 
-function PostGenerationView({ kit, userId, isLoading, onClear, onSubmit }: PostGenerationProps) {
+function PostGenerationView({
+  kit,
+  userId,
+  isLoading,
+  followUpLoading,
+  outputTab,
+  onClear,
+  onSubmit,
+  onGenerateFollowUps,
+}: PostGenerationProps) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
       <div className="h-fit rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-sm">
@@ -56,19 +119,28 @@ function PostGenerationView({ kit, userId, isLoading, onClear, onSubmit }: PostG
         <GeneratorForm onSubmit={onSubmit} isLoading={isLoading} />
       </div>
 
-      <div className="animate-fade-in rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-sm">
-        <div className="mb-5 flex items-center justify-between border-b border-[var(--border)] pb-4">
-          <div className="flex items-center gap-3">
-            <h2 className="font-serif text-lg font-normal text-[var(--text-primary)]">
-              {kit.projectName}
-            </h2>
-            <span className="rounded-full bg-[var(--accent-light)] px-3 py-0.5 text-xs font-medium text-[var(--accent)]">
-              {kit.projectType}
-            </span>
+      <div>
+        <div className="animate-fade-in rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 shadow-sm">
+          <div className="mb-5 flex items-center justify-between border-b border-[var(--border)] pb-4">
+            <div className="flex items-center gap-3">
+              <h2 className="font-serif text-lg font-normal text-[var(--text-primary)]">
+                {kit.projectName}
+              </h2>
+              <span className="rounded-full bg-[var(--accent-light)] px-3 py-0.5 text-xs font-medium text-[var(--accent)]">
+                {kit.projectType}
+              </span>
+            </div>
           </div>
-          <ExportButton kit={kit} projectName={kit.projectName} />
+          <PromptKitOutput kit={kit} isAuthenticated={!!userId} defaultTab={outputTab} />
         </div>
-        <PromptKitOutput kit={kit} isAuthenticated={!!userId} />
+
+        {kit.followUpChain === null && (
+          <FollowUpCTA
+            userId={userId}
+            followUpLoading={followUpLoading}
+            onGenerate={onGenerateFollowUps}
+          />
+        )}
       </div>
     </div>
   );
@@ -78,19 +150,12 @@ export default function GeneratePage() {
   const { userId } = useAuth();
   const [kit, setKit] = useState<PromptKit | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      try {
-        setKit(JSON.parse(cached));
-      } catch {
-        localStorage.removeItem(CACHE_KEY);
-      }
-    }
-  }, []);
+  const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [currentFormData, setCurrentFormData] = useState<ProjectInput | null>(null);
+  const [outputTab, setOutputTab] = useState<TabId>("foundation");
 
   async function handleSubmit(data: ProjectInput): Promise<void> {
+    setCurrentFormData(data);
     setIsLoading(true);
     try {
       const response = await fetch("/api/generate", {
@@ -101,7 +166,7 @@ export default function GeneratePage() {
       const json = (await response.json()) as ApiGenerateResponse;
       if (json.status === "success" && json.data) {
         setKit(json.data);
-        localStorage.setItem(CACHE_KEY, JSON.stringify(json.data));
+        setOutputTab("foundation");
       } else {
         toast.error(json.error ?? "Generation failed. Please try again.");
       }
@@ -112,9 +177,34 @@ export default function GeneratePage() {
     }
   }
 
-  function handleClearCache(): void {
-    localStorage.removeItem(CACHE_KEY);
+  async function handleGenerateFollowUps(): Promise<void> {
+    if (!kit || !currentFormData) return;
+    setFollowUpLoading(true);
+    try {
+      const response = await fetch("/api/follow-up", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: currentFormData, kit }),
+      });
+      const json = (await response.json()) as ApiFollowUpResponse;
+      if (json.status === "success" && json.data) {
+        setKit({ ...kit, followUpChain: json.data });
+        setOutputTab("follow-ups");
+        toast.success("Follow-up chain ready!");
+      } else {
+        toast.error(json.error ?? "Follow-up generation failed.");
+      }
+    } catch {
+      toast.error("Network error. Check your connection.");
+    } finally {
+      setFollowUpLoading(false);
+    }
+  }
+
+  function handleClear(): void {
     setKit(null);
+    setCurrentFormData(null);
+    setOutputTab("foundation");
   }
 
   return (
@@ -136,8 +226,11 @@ export default function GeneratePage() {
             kit={kit}
             userId={userId}
             isLoading={isLoading}
-            onClear={handleClearCache}
+            followUpLoading={followUpLoading}
+            outputTab={outputTab}
+            onClear={handleClear}
             onSubmit={handleSubmit}
+            onGenerateFollowUps={handleGenerateFollowUps}
           />
         )}
       </div>
