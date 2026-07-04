@@ -1,7 +1,8 @@
 // app/api/follow-up/route.ts — POST: Clerk auth → paid check → Gemini → return FollowUpChain JSON
 
 import { NextResponse } from "next/server";
-import { requireAuth } from "@/middleware/auth";
+import { auth } from "@clerk/nextjs/server";
+import { getUserEntitlementsFromClaims } from "@/lib/entitlements";
 import { generateFollowUpChain } from "@/features/generator/generator.service";
 import { projectInputSchema } from "@/features/generator/generator.schema";
 import { successResponse, errorResponse } from "@/types/api";
@@ -12,7 +13,22 @@ export const dynamic = "force-dynamic";
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    await requireAuth();
+    const { userId, sessionClaims } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        errorResponse("Authentication required.", "AUTHENTICATION_ERROR"),
+        { status: 401 }
+      );
+    }
+
+    const entitlements = getUserEntitlementsFromClaims(sessionClaims);
+    if (entitlements.plan !== "pro") {
+      return NextResponse.json(
+        errorResponse("Follow-up prompts require a Pro subscription.", "AUTHORIZATION_ERROR"),
+        { status: 403 }
+      );
+    }
 
     let body: unknown;
     try {

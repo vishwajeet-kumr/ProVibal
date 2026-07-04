@@ -12,6 +12,7 @@ interface PricingCardProps {
   readonly isHighlighted: boolean;
   readonly ctaLabel: string;
   readonly onCtaClick: () => void;
+  readonly disabled?: boolean;
 }
 
 export function PricingCard({
@@ -22,6 +23,7 @@ export function PricingCard({
   isHighlighted,
   ctaLabel,
   onCtaClick,
+  disabled = false,
 }: PricingCardProps) {
   return (
     <div
@@ -69,7 +71,8 @@ export function PricingCard({
       {/* CTA */}
       <button
         onClick={onCtaClick}
-        className={`w-full rounded-lg py-2.5 text-sm font-semibold transition-all duration-150 ${
+        disabled={disabled}
+        className={`w-full rounded-lg py-2.5 text-sm font-semibold transition-all duration-150 disabled:opacity-60 disabled:cursor-not-allowed ${
           isHighlighted
             ? "bg-[var(--accent)] text-white shadow-sm shadow-[var(--accent)]/20 hover:bg-[#7A5A3C]"
             : "border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--accent-light)]"

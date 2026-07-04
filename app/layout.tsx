@@ -28,8 +28,53 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Promptra",
-  description: "Generate production-grade vibe coding prompts instantly",
+  title: {
+    default: "Promptra — AI Prompt Kit Generator",
+    template: "%s | Promptra",
+  },
+  description:
+    "Generate production-grade vibe coding prompts instantly. Get a complete foundation prompt, file map, and build sequence for any app — ready to paste into any AI IDE.",
+  keywords: [
+    "vibe coding",
+    "AI prompts",
+    "prompt engineering",
+    "AI IDE",
+    "Cursor prompts",
+    "Next.js",
+    "prompt generator",
+  ],
+  authors: [{ name: "Promptra" }],
+  creator: "Promptra",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://promptra.dev",
+    siteName: "Promptra",
+    title: "Promptra — AI Prompt Kit Generator",
+    description: "Generate production-grade vibe coding prompts instantly.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Promptra — AI Prompt Kit Generator",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Promptra — AI Prompt Kit Generator",
+    description: "Generate production-grade vibe coding prompts instantly.",
+    images: ["/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
 };
 
 export default function RootLayout({
