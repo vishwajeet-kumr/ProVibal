@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { projectInputSchema } from "@/features/generator/generator.schema";
-import { generatePromptKitStream } from "@/features/generator/generator.service";
+import { generatePromptKit } from "@/features/generator/generator.service";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
@@ -17,7 +17,7 @@ function extractIp(request: Request): string {
   return "unknown";
 }
 
-export async function POST(request: Request): Promise<Response> {
+export async function POST(request: Request): Promise<NextResponse> {
   try {
     const ip = extractIp(request);
 
@@ -58,31 +58,9 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    const stream = await generatePromptKitStream(parsed.data);
+    const promptKit = await generatePromptKit(parsed.data);
 
-    const readable = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            controller.enqueue(`data: ${chunk}\n\n`);
-          }
-          controller.enqueue(`data: [DONE]\n\n`);
-          controller.close();
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : "Stream error";
-          controller.enqueue(`data: [ERROR]${msg}\n\n`);
-          controller.close();
-        }
-      }
-    });
-
-    return new Response(readable, {
-      headers: {
-        "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
-        "Connection": "keep-alive",
-      },
-    });
+    return NextResponse.json(successResponse(promptKit), { status: 200 });
   } catch (error: unknown) {
     if (AppError.isAppError(error)) {
       return NextResponse.json(
