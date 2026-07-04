@@ -1,6 +1,8 @@
-// app/api/generate/route.ts — POST: validate input → rate limit → Gemini → return PromptKit JSON
+// app/api/generate/route.ts — POST: auth → entitlements → validate → rate limit → Gemini → return PromptKit JSON
 
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { getUserEntitlementsFromClaims, canGenerate, markTrialUsed } from "@/lib/entitlements";
 import { projectInputSchema } from "@/features/generator/generator.schema";
 import { generatePromptKit } from "@/features/generator/generator.service";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -19,24 +21,42 @@ function extractIp(request: Request): string {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const ip = extractIp(request);
+    const { userId, sessionClaims } = await auth();
 
-    try {
-      checkRateLimit(ip);
-    } catch (rateLimitError: unknown) {
-      if (AppError.isAppError(rateLimitError)) {
+    if (!userId) {
+      throw AppError.authentication(
+        "No authenticated session found for protected route",
+        {}
+      );
+    }
+
+    const entitlements = getUserEntitlementsFromClaims(sessionClaims);
+    if (!canGenerate(entitlements)) {
+      throw AppError.authorization(
+        "Free trial already used. Upgrade to Pro.",
+        { userId }
+      );
+    }
+
+    if (entitlements.plan !== "pro") {
+      const ip = extractIp(request);
+      try {
+        checkRateLimit(ip);
+      } catch (rateLimitError: unknown) {
+        if (AppError.isAppError(rateLimitError)) {
+          return NextResponse.json(
+            errorResponse(
+              rateLimitError.toClientResponse().error,
+              rateLimitError.code
+            ),
+            { status: 429 }
+          );
+        }
         return NextResponse.json(
-          errorResponse(
-            rateLimitError.toClientResponse().error,
-            rateLimitError.code
-          ),
+          errorResponse("Too many requests. Please try again later.", "RATE_LIMIT_EXCEEDED"),
           { status: 429 }
         );
       }
-      return NextResponse.json(
-        errorResponse("Too many requests. Please try again later.", "RATE_LIMIT_EXCEEDED"),
-        { status: 429 }
-      );
     }
 
     let body: unknown;
@@ -59,6 +79,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const promptKit = await generatePromptKit(parsed.data);
+
+    if (entitlements.plan === "free") {
+      await markTrialUsed(userId);
+    }
 
     return NextResponse.json(successResponse(promptKit), { status: 200 });
   } catch (error: unknown) {

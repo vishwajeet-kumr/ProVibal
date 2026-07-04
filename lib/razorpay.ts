@@ -22,7 +22,8 @@ function buildBasicAuthHeader(): string {
 }
 
 export async function createSubscription(
-  planId: string
+  planId: string,
+  clerkUserId: string
 ): Promise<RazorpaySubscription> {
   const response = await fetch(`${RAZORPAY_API_BASE}/subscriptions`, {
     method: "POST",
@@ -34,6 +35,7 @@ export async function createSubscription(
       plan_id: planId,
       quantity: 1,
       total_count: 12,
+      notes: { clerkUserId },
     }),
   });
 

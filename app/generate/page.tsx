@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import Link from "next/link";
-import { Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2, LogIn } from "lucide-react";
 import { GeneratorForm } from "@/components/generator-form";
 import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
@@ -32,6 +32,30 @@ function PageHeading() {
       <p className="mt-3 text-base text-[var(--text-muted)]">
         Describe your project and get a complete vibe coding prompt kit instantly.
       </p>
+    </div>
+  );
+}
+
+function SignInPrompt() {
+  return (
+    <div className="mx-auto max-w-md">
+      <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-10 shadow-sm text-center">
+        <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--accent-light)]">
+          <LogIn size={24} className="text-[var(--accent)]" />
+        </div>
+        <h2 className="mb-2 font-serif text-xl text-[var(--text-primary)]">
+          Sign in to get started
+        </h2>
+        <p className="mx-auto mb-6 max-w-xs text-sm text-[var(--text-muted)]">
+          Create a free account to generate your first production-grade prompt kit.
+        </p>
+        <Link
+          href="/sign-in"
+          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] px-6 py-2.5 text-sm font-semibold text-[var(--text-primary)] transition-colors hover:bg-[var(--accent-light)]"
+        >
+          Sign in to generate
+        </Link>
+      </div>
     </div>
   );
 }
@@ -147,7 +171,7 @@ function PostGenerationView({
 }
 
 export default function GeneratePage() {
-  const { userId } = useAuth();
+  const { userId, isLoaded } = useAuth();
   const [kit, setKit] = useState<PromptKit | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [followUpLoading, setFollowUpLoading] = useState(false);
@@ -211,7 +235,13 @@ export default function GeneratePage() {
     <main className="min-h-screen bg-[var(--bg)]">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <PageHeading />
-        {isLoading ? (
+        {!isLoaded ? (
+          <div className="mx-auto w-full max-w-md">
+            <GenerationLoader />
+          </div>
+        ) : !userId ? (
+          <SignInPrompt />
+        ) : isLoading ? (
           <div className="mx-auto w-full max-w-md">
             <GenerationLoader />
           </div>
