@@ -5,6 +5,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Navbar } from "@/components/navbar";
 import "./globals.css";
 
@@ -108,6 +109,7 @@ export default function RootLayout({
           {children}
           <Toaster position="bottom-right" richColors />
           <Analytics />
+          <SpeedInsights />
         </body>
       </html>
     </ClerkProvider>
