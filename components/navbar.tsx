@@ -31,7 +31,7 @@ export function Navbar() {
           href="/"
           className="font-serif text-xl font-bold tracking-tight text-[var(--text-primary)] transition-opacity hover:opacity-70"
         >
-          Promptra
+          Provibal
         </Link>
 
         {/* Center nav links */}

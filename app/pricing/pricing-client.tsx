@@ -79,7 +79,7 @@ export function PricingClient() {
       const rzp = new (window as any).Razorpay({
         key: json.data.keyId,
         subscription_id: json.data.subscriptionId,
-        name: "Promptra",
+        name: "Provibal",
         description: "Pro Plan — ₹239/month",
         theme: { color: "#8C6A4A" },
         handler: function () {

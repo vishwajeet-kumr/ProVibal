@@ -30,8 +30,8 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Promptra — AI Prompt Kit Generator",
-    template: "%s | Promptra",
+    default: "Provibal — AI Prompt Kit Generator",
+    template: "%s | Provibal",
   },
   description:
     "Generate production-grade vibe coding prompts instantly. Get a complete foundation prompt, file map, and build sequence for any app — ready to paste into any AI IDE.",
@@ -44,27 +44,27 @@ export const metadata: Metadata = {
     "Next.js",
     "prompt generator",
   ],
-  authors: [{ name: "Promptra" }],
-  creator: "Promptra",
+  authors: [{ name: "Provibal" }],
+  creator: "Provibal",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://promptra.dev",
-    siteName: "Promptra",
-    title: "Promptra — AI Prompt Kit Generator",
+    url: "https://provibal.dev",
+    siteName: "Provibal",
+    title: "Provibal — AI Prompt Kit Generator",
     description: "Generate production-grade vibe coding prompts instantly.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Promptra — AI Prompt Kit Generator",
+        alt: "Provibal — AI Prompt Kit Generator",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Promptra — AI Prompt Kit Generator",
+    title: "Provibal — AI Prompt Kit Generator",
     description: "Generate production-grade vibe coding prompts instantly.",
     images: ["/og-image.png"],
   },

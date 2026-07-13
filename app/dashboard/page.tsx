@@ -20,7 +20,7 @@ export default async function DashboardPage() {
             Welcome back!
           </h1>
           <p className="mt-3 text-base text-[var(--text-muted)]">
-            Your Promptra dashboard — manage your generated kits here.
+            Your Provibal dashboard — manage your generated kits here.
           </p>
         </div>
 

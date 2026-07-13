@@ -11,6 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/dashboard", "/api"],
       },
     ],
-    sitemap: "https://promptra.dev/sitemap.xml",
+    sitemap: "https://provibal.dev/sitemap.xml",
   };
 }
