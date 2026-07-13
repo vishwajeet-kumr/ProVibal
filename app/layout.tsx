@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -106,6 +107,7 @@ export default function RootLayout({
         <body className="bg-[var(--bg)]">
           <Navbar />
           {children}
+          <Footer />
           <Toaster position="bottom-right" richColors />
           <Analytics />
         </body>
