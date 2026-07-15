@@ -1,9 +1,8 @@
-// app/api/checkout/route.ts — POST: auth → entitlement guard → Dodo checkout session → return checkoutUrl
+// app/api/checkout/route.ts — POST: auth → Dodo checkout session → return checkoutUrl
 
 import { NextResponse } from "next/server";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { createCheckoutSession } from "@/lib/dodo";
-import { getUserEntitlements } from "@/lib/entitlements";
 import { env } from "@/config/env";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
@@ -52,20 +51,8 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const { productType } = parsed.data;
-
-    const entitlements = await getUserEntitlements(userId);
-
-    if (productType === "pro_subscription" && entitlements.plan === "pro") {
-      throw AppError.validation("You already have an active Pro subscription.", {});
-    }
-
-    if (productType === "refill_pack" && entitlements.plan !== "pro") {
-      throw AppError.validation("Upgrade to Pro before buying a refill pack.", {});
-    }
-
     const productId =
-      productType === "pro_subscription"
+      parsed.data.productType === "pro_subscription"
         ? env.DODO_PRO_PRODUCT_ID
         : env.DODO_REFILL_PRODUCT_ID;
 

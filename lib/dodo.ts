@@ -19,7 +19,7 @@ export async function createCheckoutSession(
     const session = await dodo.checkoutSessions.create({
       product_cart: [{ product_id: productId, quantity: 1 }],
       customer: { email: customerEmail },
-      return_url: "https://provibal.com/checkout/result",
+      return_url: "https://provibal.com/dashboard?checkout=complete",
       metadata: { clerkUserId },
     });
 
