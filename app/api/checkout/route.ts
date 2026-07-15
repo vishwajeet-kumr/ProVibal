@@ -1,15 +1,20 @@
-// app/api/checkout/route.ts — POST: auth → create Razorpay subscription → return subscription ID + key
+// app/api/checkout/route.ts — POST: auth → Dodo checkout session → return checkoutUrl
 
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
-import { createSubscription } from "@/lib/razorpay";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { createCheckoutSession } from "@/lib/dodo";
 import { env } from "@/config/env";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
+import { z } from "zod";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(): Promise<NextResponse> {
+const checkoutBodySchema = z.object({
+  productType: z.enum(["pro_subscription", "refill_pack"]),
+});
+
+export async function POST(request: Request): Promise<NextResponse> {
   try {
     const { userId } = await auth();
 
@@ -20,13 +25,41 @@ export async function POST(): Promise<NextResponse> {
       );
     }
 
-    const subscription = await createSubscription(env.RAZORPAY_PLAN_ID, userId);
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const email = user.primaryEmailAddress?.emailAddress;
+
+    if (!email) {
+      throw AppError.validation("No email address on account.", {});
+    }
+
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        errorResponse("Request body must be valid JSON.", "VALIDATION_ERROR"),
+        { status: 400 }
+      );
+    }
+
+    const parsed = checkoutBodySchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        errorResponse("Invalid product type.", "VALIDATION_ERROR"),
+        { status: 400 }
+      );
+    }
+
+    const productId =
+      parsed.data.productType === "pro_subscription"
+        ? env.DODO_PRO_PRODUCT_ID
+        : env.DODO_REFILL_PRODUCT_ID;
+
+    const { checkoutUrl } = await createCheckoutSession(productId, userId, email);
 
     return NextResponse.json(
-      successResponse({
-        subscriptionId: subscription.id,
-        keyId: env.RAZORPAY_KEY_ID,
-      }),
+      successResponse({ checkoutUrl }),
       { status: 200 }
     );
   } catch (error: unknown) {

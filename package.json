@@ -13,6 +13,7 @@
     "@google/genai": "^2.10.0",
     "@hookform/resolvers": "^3.10.0",
     "@vercel/analytics": "^2.0.1",
+    "dodopayments": "^2.42.2",
     "framer-motion": "^12.42.0",
     "lucide-react": "^0.511.0",
     "next": "^16.2.10",
@@ -21,6 +22,7 @@
     "react-dom": "19.2.4",
     "react-hook-form": "^7.56.4",
     "sonner": "^2.0.7",
+    "standardwebhooks": "^1.0.0",
     "zod": "^3.24.4"
   },
   "devDependencies": {

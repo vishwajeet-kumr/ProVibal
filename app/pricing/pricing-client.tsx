@@ -1,6 +1,6 @@
 "use client";
 
-// app/pricing/page.tsx — Plan comparison: Free vs Pro — Razorpay checkout
+// app/pricing/pricing-client.tsx — Three-tier pricing: Free / Pro / Refill — Dodo checkout
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,99 +10,89 @@ import { Loader2 } from "lucide-react";
 import { PricingCard } from "@/components/pricing-card";
 
 const FREE_FEATURES = [
-  "1 foundation prompt kit",
+  "1–2 project kits",
+  "2 follow-up runs",
   "Project map + file structure",
   "6–8 ordered build steps",
-  "Basic tech stack support",
 ] as const;
 
 const PRO_FEATURES = [
   "Everything in Free",
-  "8 follow-up prompts per kit",
+  "Unlimited project generations",
+  "50 follow-up runs/month",
   "Debug + optimize + deploy prompts",
   "Security hardening prompts",
   "Priority generation speed",
 ] as const;
 
+const REFILL_FEATURES = [
+  "+15 follow-up runs",
+  "Use anytime — no expiry",
+  "Stacks with monthly runs",
+  "Available to all users",
+] as const;
+
 interface CheckoutApiResponse {
   status: "success" | "error";
-  data?: { subscriptionId: string; keyId: string };
+  data?: { checkoutUrl: string };
   error?: string;
 }
 
-function loadRazorpayScript(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (document.getElementById("razorpay-checkout-js")) {
-      resolve();
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "razorpay-checkout-js";
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("Failed to load Razorpay SDK"));
-    document.body.appendChild(script);
+type ProductType = "pro_subscription" | "refill_pack";
+
+async function postCheckout(
+  productType: ProductType
+): Promise<{ checkoutUrl: string } | { error: string }> {
+  const response = await fetch("/api/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productType }),
   });
+  const json = (await response.json()) as CheckoutApiResponse;
+
+  if (json.status === "success" && json.data) {
+    return { checkoutUrl: json.data.checkoutUrl };
+  }
+  return { error: json.error ?? "Checkout failed. Please try again." };
 }
 
 export function PricingClient() {
   const router = useRouter();
   const { userId } = useAuth();
-  const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [loadingProduct, setLoadingProduct] = useState<ProductType | null>(null);
 
   function handleFreeClick(): void {
     router.push("/generate");
   }
 
-  async function handleProClick(): Promise<void> {
+  async function handleCheckout(productType: ProductType): Promise<void> {
     if (!userId) {
       router.push("/sign-in");
       return;
     }
 
-    setIsCheckoutLoading(true);
+    setLoadingProduct(productType);
     try {
-      const response = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const json = (await response.json()) as CheckoutApiResponse;
-
-      if (json.status !== "success" || !json.data) {
-        toast.error(json.error ?? "Checkout failed. Please try again.");
+      const result = await postCheckout(productType);
+      if ("error" in result) {
+        toast.error(result.error);
         return;
       }
-
-      await loadRazorpayScript();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const rzp = new (window as any).Razorpay({
-        key: json.data.keyId,
-        subscription_id: json.data.subscriptionId,
-        name: "Provibal",
-        description: "Pro Plan — ₹239/month",
-        theme: { color: "#8C6A4A" },
-        handler: function () {
-          toast.success("Payment successful! Pro access activating...");
-          router.push("/dashboard");
-        },
-        modal: {
-          ondismiss: function () {
-            setIsCheckoutLoading(false);
-          },
-        },
-      });
-      rzp.open();
+      window.location.href = result.checkoutUrl;
     } catch {
       toast.error("Network error. Check your connection.");
     } finally {
-      setIsCheckoutLoading(false);
+      setLoadingProduct(null);
     }
   }
 
+  const isProLoading = loadingProduct === "pro_subscription";
+  const isRefillLoading = loadingProduct === "refill_pack";
+  const isAnyLoading = loadingProduct !== null;
+
   return (
     <main className="min-h-screen bg-[var(--bg)] px-4 py-20 sm:px-6 lg:px-8">
-      <div className="relative mx-auto max-w-4xl">
+      <div className="relative mx-auto max-w-5xl">
         {/* Heading */}
         <div className="mb-14 text-center">
           <h1 className="font-serif text-5xl font-normal tracking-tight text-[var(--text-primary)] sm:text-6xl">
@@ -116,7 +106,7 @@ export function PricingClient() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <PricingCard
             name="Free"
             price="Free"
@@ -128,18 +118,28 @@ export function PricingClient() {
           />
           <PricingCard
             name="Pro"
-            price="₹239"
-            description="Unlock the full prompt kit — from debugging to deployment, all in one place."
+            price="$15"
+            description="Unlimited projects + 50 follow-up runs per month for serious builders."
             features={PRO_FEATURES}
             isHighlighted={true}
-            ctaLabel={isCheckoutLoading ? "Processing…" : "Upgrade to Pro"}
-            onCtaClick={handleProClick}
-            disabled={isCheckoutLoading}
+            ctaLabel={isProLoading ? "Redirecting…" : "Upgrade to Pro"}
+            onCtaClick={() => handleCheckout("pro_subscription")}
+            disabled={isAnyLoading}
+          />
+          <PricingCard
+            name="Refill"
+            price="$5"
+            description="One-time top-up. 15 extra follow-up runs that never expire."
+            features={REFILL_FEATURES}
+            isHighlighted={false}
+            ctaLabel={isRefillLoading ? "Redirecting…" : "Buy 15-Run Top-Up"}
+            onCtaClick={() => handleCheckout("refill_pack")}
+            disabled={isAnyLoading}
           />
         </div>
 
-        {/* Loader indicator below cards */}
-        {isCheckoutLoading && (
+        {/* Loader indicator */}
+        {isAnyLoading && (
           <div className="mt-6 flex items-center justify-center gap-2 text-sm text-[var(--text-muted)]">
             <Loader2 size={16} className="animate-spin text-[var(--accent)]" />
             Setting up your checkout…
@@ -148,7 +148,7 @@ export function PricingClient() {
 
         {/* Footer note */}
         <p className="mt-10 text-center text-sm text-[var(--text-muted)]">
-          All prices in INR · Cancel anytime · No hidden fees
+          All prices in USD · Cancel anytime · No hidden fees
         </p>
       </div>
     </main>

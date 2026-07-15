@@ -50,7 +50,7 @@ export default function PrivacyPage() {
                 <strong>Google Gemini</strong> (ai.google) — AI prompt generation
               </li>
               <li>
-                <strong>Razorpay</strong> (razorpay.com) — payment processing
+                <strong>Dodo Payments</strong> (dodopayments.com) — payment processing
               </li>
               <li>
                 <strong>Vercel</strong> (vercel.com) — hosting and infrastructure

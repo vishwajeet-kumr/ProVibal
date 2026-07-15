@@ -1,8 +1,8 @@
-// app/api/follow-up/route.ts — POST: Clerk auth → paid check → Gemini → return FollowUpChain JSON
+// app/api/follow-up/route.ts — POST: auth → follow-up metering → Gemini → consume run → return FollowUpChain JSON
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getUserEntitlementsFromClaims } from "@/lib/entitlements";
+import { getUserEntitlementsFromClaims, canRunFollowUp, consumeFollowUpRun } from "@/lib/entitlements";
 import { generateFollowUpChain } from "@/features/generator/generator.service";
 import { projectInputSchema } from "@/features/generator/generator.schema";
 import { successResponse, errorResponse } from "@/types/api";
@@ -23,10 +23,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const entitlements = getUserEntitlementsFromClaims(sessionClaims);
-    if (entitlements.plan !== "pro") {
-      return NextResponse.json(
-        errorResponse("Follow-up prompts require a Pro subscription.", "AUTHORIZATION_ERROR"),
-        { status: 403 }
+    const gate = canRunFollowUp(entitlements);
+    if (!gate.allowed) {
+      throw AppError.authorization(
+        gate.reason === "free_limit_reached"
+          ? "Free follow-up runs used. Upgrade to Pro for 50 runs/month."
+          : "Monthly runs used up. Buy a 15-run top-up or wait for renewal.",
+        { userId }
       );
     }
 
@@ -73,6 +76,12 @@ export async function POST(request: Request): Promise<NextResponse> {
       parsed.data,
       kit as PromptKit
     );
+
+    try {
+      await consumeFollowUpRun(userId, gate.consumeFrom, entitlements);
+    } catch (err: unknown) {
+      console.error("[follow-up] Failed to consume run", { userId, err });
+    }
 
     return NextResponse.json(successResponse(followUpChain), { status: 200 });
   } catch (error: unknown) {

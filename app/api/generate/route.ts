@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getUserEntitlementsFromClaims, canGenerate, markTrialUsed } from "@/lib/entitlements";
+import { getUserEntitlementsFromClaims, canGenerate, markProjectTrialUsed } from "@/lib/entitlements";
 import { projectInputSchema } from "@/features/generator/generator.schema";
 import { generatePromptKit } from "@/features/generator/generator.service";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -81,7 +81,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const promptKit = await generatePromptKit(parsed.data);
 
     if (entitlements.plan === "free") {
-      await markTrialUsed(userId);
+      await markProjectTrialUsed(userId);
     }
 
     return NextResponse.json(successResponse(promptKit), { status: 200 });
