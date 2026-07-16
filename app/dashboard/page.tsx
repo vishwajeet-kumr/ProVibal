@@ -2,7 +2,9 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import Link from "next/link";
+import { CheckoutStatus } from "@/components/checkout-status";
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -23,6 +25,11 @@ export default async function DashboardPage() {
             Your Provibal dashboard — manage your generated kits here.
           </p>
         </div>
+
+        {/* Post-checkout feedback — renders nothing without checkout params */}
+        <Suspense>
+          <CheckoutStatus />
+        </Suspense>
 
         {/* Empty state */}
         <div className="flex flex-col items-center justify-center gap-6 rounded-2xl border border-dashed border-[var(--border)] bg-[var(--bg-card)] py-20 text-center">

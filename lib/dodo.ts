@@ -20,6 +20,7 @@ export async function createCheckoutSession(
       product_cart: [{ product_id: productId, quantity: 1 }],
       customer: { email: customerEmail },
       return_url: "https://provibal.com/dashboard?checkout=complete",
+      cancel_url: "https://provibal.com/pricing",
       metadata: { clerkUserId },
     });
 

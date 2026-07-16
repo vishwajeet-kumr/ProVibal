@@ -56,7 +56,7 @@ async function postCheckout(
   return { error: json.error ?? "Checkout failed. Please try again." };
 }
 
-export function PricingClient() {
+export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
   const router = useRouter();
   const { userId } = useAuth();
   const [loadingProduct, setLoadingProduct] = useState<ProductType | null>(null);
@@ -122,9 +122,9 @@ export function PricingClient() {
             description="Unlimited projects + 50 follow-up runs per month for serious builders."
             features={PRO_FEATURES}
             isHighlighted={true}
-            ctaLabel={isProLoading ? "Redirecting…" : "Upgrade to Pro"}
+            ctaLabel={isAlreadyPro ? "You're on Pro ✓" : isProLoading ? "Redirecting…" : "Upgrade to Pro"}
             onCtaClick={() => handleCheckout("pro_subscription")}
-            disabled={isAnyLoading}
+            disabled={isAlreadyPro || isAnyLoading}
           />
           <PricingCard
             name="Refill"

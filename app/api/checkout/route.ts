@@ -6,6 +6,7 @@ import { createCheckoutSession } from "@/lib/dodo";
 import { env } from "@/config/env";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
+import { getUserEntitlements } from "@/lib/entitlements";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,13 @@ export async function POST(request: Request): Promise<NextResponse> {
         errorResponse("Invalid product type.", "VALIDATION_ERROR"),
         { status: 400 }
       );
+    }
+
+    if (parsed.data.productType === "pro_subscription") {
+      const entitlements = await getUserEntitlements(userId);
+      if (entitlements.plan === "pro") {
+        throw AppError.conflict("You're already on the Pro plan.", { userId });
+      }
     }
 
     const productId =

@@ -4,6 +4,7 @@ type ErrorCode =
   | "VALIDATION_ERROR"
   | "AUTHENTICATION_ERROR"
   | "AUTHORIZATION_ERROR"
+  | "CONFLICT_ERROR"
   | "RATE_LIMIT_EXCEEDED"
   | "GENERATION_FAILED"
   | "WEBHOOK_VERIFICATION_FAILED"
@@ -25,6 +26,7 @@ const CLIENT_SAFE_MESSAGES: Record<ErrorCode, string> = {
   VALIDATION_ERROR: "Invalid input provided. Please check your data and try again.",
   AUTHENTICATION_ERROR: "Authentication required. Please sign in to continue.",
   AUTHORIZATION_ERROR: "You do not have access to this feature. Please upgrade your plan.",
+  CONFLICT_ERROR: "This action conflicts with your current account state.",
   RATE_LIMIT_EXCEEDED: "Free tier limit reached. Please try again later or upgrade to Pro.",
   GENERATION_FAILED: "Prompt generation failed. Please try again.",
   WEBHOOK_VERIFICATION_FAILED: "Payment verification failed.",
@@ -77,6 +79,15 @@ export class AppError extends Error {
       code: "AUTHORIZATION_ERROR",
       message,
       statusCode: 403,
+      context,
+    });
+  }
+
+  static conflict(message: string, context?: ErrorContext): AppError {
+    return new AppError({
+      code: "CONFLICT_ERROR",
+      message,
+      statusCode: 409,
       context,
     });
   }
