@@ -78,7 +78,7 @@ function assertArray(value: unknown, field: string): unknown[] {
   return value;
 }
 
-function validatePromptKit(raw: unknown): PromptKit {
+function validatePromptKit(raw: unknown, techStack: import("@/features/generator/generator.types").TechStackPreference): PromptKit {
   const root = assertObject(raw, "root");
 
   const projectName = assertString(root["projectName"], "projectName");
@@ -130,6 +130,7 @@ function validatePromptKit(raw: unknown): PromptKit {
   return {
     projectName,
     projectType: projectType as PromptKit["projectType"],
+    techStack,
     foundation: validatedFoundation,
     projectMap: validatedProjectMap,
     featureSequence: validatedFeatureSequence,
@@ -177,7 +178,7 @@ export async function generatePromptKit(input: ProjectInput): Promise<PromptKit>
   });
 
   const raw = parseJsonResponse(text, "PromptKit");
-  return validatePromptKit(raw);
+  return validatePromptKit(raw, input.techStack);
 }
 
 export async function generatePromptKitStream(

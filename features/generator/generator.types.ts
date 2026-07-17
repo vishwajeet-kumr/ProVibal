@@ -78,6 +78,7 @@ export interface PromptKit {
   readonly id?: string;
   readonly projectName: string;
   readonly projectType: ProjectType;
+  readonly techStack: TechStackPreference;
   readonly foundation: FoundationPrompt;
   readonly projectMap: ProjectMapPrompt;
   readonly featureSequence: FeatureBuildSequence;

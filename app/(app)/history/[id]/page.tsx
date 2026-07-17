@@ -63,7 +63,7 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
         </p>
       </div>
 
-      <PromptKitOutput kit={promptKit} isGenerating={false} />
+      <PromptKitOutput kit={promptKit} isAuthenticated={true} />
     </div>
   );
 }
