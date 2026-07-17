@@ -5,8 +5,6 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
 import "./globals.css";
 
 const inter = Inter({
@@ -104,10 +102,8 @@ export default function RootLayout({
             }}
           />
         </head>
-        <body className="bg-[var(--bg)]">
-          <Navbar />
+        <body className="bg-[var(--bg)] min-h-screen flex flex-col">
           {children}
-          <Footer />
           <Toaster position="bottom-right" richColors />
           <Analytics />
         </body>

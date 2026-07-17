@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[var(--bg)] px-4 py-20 sm:px-6 lg:px-8">
+    <main>
       <div className="mx-auto max-w-3xl">
         {/* Header */}
         <div className="mb-10">
