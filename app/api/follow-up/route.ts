@@ -8,6 +8,7 @@ import { projectInputSchema } from "@/features/generator/generator.schema";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
 import type { PromptKit } from "@/features/generator/generator.types";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -76,6 +77,29 @@ export async function POST(request: Request): Promise<NextResponse> {
       parsed.data,
       kit as PromptKit
     );
+
+    const typedKit = kit as PromptKit;
+    if (typedKit.id) {
+      const { data: dbKit } = await supabaseAdmin
+        .from("generations")
+        .select("follow_up_runs")
+        .eq("id", typedKit.id)
+        .single();
+      
+      if (dbKit) {
+         const currentRuns = Array.isArray(dbKit.follow_up_runs) ? dbKit.follow_up_runs : [];
+         await supabaseAdmin
+           .from("generations")
+           .update({ follow_up_runs: [...currentRuns, followUpChain] })
+           .eq("id", typedKit.id);
+      }
+    }
+
+    // Log usage
+    await supabaseAdmin.from("usage_logs").insert({
+      user_id: userId,
+      action_type: "follow_up",
+    });
 
     try {
       await consumeFollowUpRun(userId, gate.consumeFrom, entitlements);

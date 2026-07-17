@@ -75,6 +75,7 @@ export interface FollowUpChain {
 }
 
 export interface PromptKit {
+  readonly id?: string;
   readonly projectName: string;
   readonly projectType: ProjectType;
   readonly foundation: FoundationPrompt;

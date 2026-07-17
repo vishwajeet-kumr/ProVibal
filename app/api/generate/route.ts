@@ -8,6 +8,7 @@ import { generatePromptKit } from "@/features/generator/generator.service";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -80,11 +81,39 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const promptKit = await generatePromptKit(parsed.data);
 
+    // Save to database
+    const { data: dbRecord, error: dbError } = await supabaseAdmin
+      .from("generations")
+      .insert({
+        user_id: userId,
+        project_name: parsed.data.projectName,
+        project_type: parsed.data.projectType,
+        tech_stack: parsed.data.techStack,
+        description: parsed.data.description,
+        foundation_prompt: promptKit.foundation,
+        file_map: promptKit.projectMap,
+        build_steps: promptKit.featureSequence,
+        follow_up_runs: promptKit.followUpChain ? [promptKit.followUpChain] : [],
+      })
+      .select("id")
+      .single();
+
+    if (dbError) {
+      console.error("Failed to save generation to DB:", dbError);
+    }
+
+    // Log usage
+    await supabaseAdmin.from("usage_logs").insert({
+      user_id: userId,
+      action_type: "generate_kit",
+    });
+
     if (entitlements.plan === "free") {
       await markProjectTrialUsed(userId);
     }
 
-    return NextResponse.json(successResponse(promptKit), { status: 200 });
+    const finalKit = dbRecord ? { ...promptKit, id: dbRecord.id } : promptKit;
+    return NextResponse.json(successResponse(finalKit), { status: 200 });
   } catch (error: unknown) {
     if (AppError.isAppError(error)) {
       return NextResponse.json(

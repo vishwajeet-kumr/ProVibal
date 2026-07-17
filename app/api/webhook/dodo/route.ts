@@ -6,6 +6,7 @@ import { verifyDodoWebhook } from "@/lib/dodo";
 import { env } from "@/config/env";
 import { TOPUP_RUN_GRANT, getUserEntitlements } from "@/lib/entitlements";
 import { errorResponse } from "@/types/api";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,19 @@ async function handlePaymentSucceeded(payload: DodoWebhookPayload): Promise<void
     await client.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { plan: "pro", monthlyFollowUpRunsUsed: 0 },
     });
+
+    await supabaseAdmin.from("subscriptions").upsert(
+      {
+        user_id: clerkUserId,
+        dodo_subscription_id: typeof payload.data.subscription_id === "string" ? payload.data.subscription_id : "unknown",
+        dodo_customer_id: typeof payload.data.customer_id === "string" ? payload.data.customer_id : "unknown",
+        status: "active",
+        plan_id: productId,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id" }
+    );
+
     console.info("[dodo-webhook] Pro activated/renewed", { clerkUserId });
     return;
   }
@@ -71,6 +85,12 @@ async function handleSubscriptionEnd(payload: DodoWebhookPayload): Promise<void>
   await client.users.updateUserMetadata(clerkUserId, {
     publicMetadata: { plan: "free" },
   });
+
+  await supabaseAdmin
+    .from("subscriptions")
+    .update({ status: "canceled", updated_at: new Date().toISOString() })
+    .eq("user_id", clerkUserId);
+
   console.info("[dodo-webhook] Downgraded to free", { clerkUserId });
 }
 
