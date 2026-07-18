@@ -1,6 +1,46 @@
+"use client";
+
 // components/hero-section.tsx — Two-column hero: headline + floating UI card preview
 
 import Link from "next/link";
+import { useState } from "react";
+
+function EasterEgg() {
+  const [revealed, setRevealed] = useState(false);
+
+  return (
+    <div className="mt-2 flex flex-col items-start w-full">
+      <span
+        onClick={() => setRevealed(!revealed)}
+        className="text-xs text-[var(--text-muted)] cursor-pointer hover:text-[var(--accent)] underline decoration-dotted transition-colors"
+      >
+        {revealed
+          ? "🤫 Okay okay, you found it! Click to hide"
+          : "✨ Psst... there's something interesting about this site"}
+      </span>
+
+      <div
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
+          revealed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 mt-4 max-w-md mx-auto lg:mx-0 text-center shadow-lg shadow-[var(--accent)]/5">
+          <div className="text-4xl mb-3">🤖</div>
+          <h3 className="font-serif text-lg text-[var(--text-primary)] mb-2">
+            Built entirely by Vibe Coding
+          </h3>
+          <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-4">
+            Every single line of code on this website was generated using AI — no manual coding.
+            Just clear prompts, good architecture, and a vision. That's the power of vibe coding. 🚀
+          </p>
+          <span className="inline-block bg-[var(--accent-light)] text-[var(--accent)] text-xs font-medium px-3 py-1 rounded-full">
+            Powered by Claude + Gemini + Antigravity
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AvatarStack() {
   const initials = ["V", "A", "M"];
@@ -156,6 +196,8 @@ export function HeroSection() {
               See how it works →
             </Link>
           </div>
+          
+          <EasterEgg />
 
           {/* Social proof */}
           <AvatarStack />

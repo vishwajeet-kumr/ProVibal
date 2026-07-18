@@ -16,6 +16,7 @@ export async function GenerationHistory() {
     .limit(10);
 
   if (error) {
+    console.error("Failed to load generations from Supabase:", error);
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
         Failed to load kit history.

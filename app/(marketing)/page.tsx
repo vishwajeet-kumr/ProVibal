@@ -72,9 +72,25 @@ const FEATURES: FeatureCardProps[] = [
   },
 ];
 
+function AnnouncementBanner() {
+  return (
+    <div className="w-full bg-[var(--accent-light)] border-b border-[var(--border)] py-2.5 px-4 text-center text-sm">
+      <p className="text-[var(--text-primary)]">
+        🚧 ProVibal is currently in development & testing. Please do not initiate any payments right now. For suggestions or collaboration, reach out — I'll respond within 6 hours.
+        <br className="sm:hidden" />
+        {' '}
+        <a href="mailto:contact.provibal@gmail.com" className="underline text-[var(--accent)] font-medium">
+          contact.provibal@gmail.com
+        </a>
+      </p>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <div className="bg-[var(--bg)]">
+      <AnnouncementBanner />
       <HeroSection />
 
       {/* Features section */}
