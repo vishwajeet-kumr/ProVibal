@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEntitlements } from "@/lib/entitlements";
+import { env } from "@/config/env";
 import { PricingClient } from "./pricing-client";
 
 export const metadata: Metadata = {
@@ -20,5 +21,7 @@ export default async function PricingPage() {
     isAlreadyPro = entitlements.plan === "pro";
   }
 
-  return <PricingClient isAlreadyPro={isAlreadyPro} />;
+  const paymentsEnabled = env.PAYMENTS_ENABLED === "true";
+
+  return <PricingClient isAlreadyPro={isAlreadyPro} paymentsEnabled={paymentsEnabled} />;
 }

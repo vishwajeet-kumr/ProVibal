@@ -11,6 +11,7 @@ const envSchema = z.object({
   DODO_PRO_PRODUCT_ID: z.string().min(1, "DODO_PRO_PRODUCT_ID is required"),
   DODO_REFILL_PRODUCT_ID: z.string().min(1, "DODO_REFILL_PRODUCT_ID is required"),
   DODO_ENVIRONMENT: z.enum(["test_mode", "live_mode"]),
+  PAYMENTS_ENABLED: z.enum(["true", "false"]).default("true"),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1, "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY is required"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   NEXT_PUBLIC_SUPABASE_URL: z.string().url("Must be a valid URL"),

@@ -56,7 +56,7 @@ async function postCheckout(
   return { error: json.error ?? "Checkout failed. Please try again." };
 }
 
-export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
+export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro: boolean, paymentsEnabled: boolean }) {
   const router = useRouter();
   const { userId } = useAuth();
   const [loadingProduct, setLoadingProduct] = useState<ProductType | null>(null);
@@ -66,6 +66,7 @@ export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
   }
 
   async function handleCheckout(productType: ProductType): Promise<void> {
+    if (!paymentsEnabled) return;
     if (!userId) {
       router.push("/sign-in");
       return;
@@ -105,6 +106,14 @@ export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
           </p>
         </div>
 
+        {!paymentsEnabled && (
+          <div className="mb-10 rounded-xl border border-[var(--accent-light)] bg-[var(--accent-light)]/20 p-4 text-center">
+            <p className="text-sm font-medium text-[var(--accent)]">
+              Upgrades are temporarily paused while we finish some backend work — back soon.
+            </p>
+          </div>
+        )}
+
         {/* Cards */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
           <PricingCard
@@ -124,7 +133,7 @@ export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
             isHighlighted={true}
             ctaLabel={isAlreadyPro ? "You're on Pro ✓" : isProLoading ? "Redirecting…" : "Upgrade to Pro"}
             onCtaClick={() => handleCheckout("pro_subscription")}
-            disabled={isAlreadyPro || isAnyLoading}
+            disabled={isAlreadyPro || isAnyLoading || !paymentsEnabled}
           />
           <PricingCard
             name="Refill"
@@ -134,7 +143,7 @@ export function PricingClient({ isAlreadyPro }: { isAlreadyPro: boolean }) {
             isHighlighted={false}
             ctaLabel={isRefillLoading ? "Redirecting…" : "Buy 15-Run Top-Up"}
             onCtaClick={() => handleCheckout("refill_pack")}
-            disabled={isAnyLoading}
+            disabled={isAnyLoading || !paymentsEnabled}
           />
         </div>
 

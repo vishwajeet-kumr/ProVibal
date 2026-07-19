@@ -17,6 +17,13 @@ const checkoutBodySchema = z.object({
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    if (env.PAYMENTS_ENABLED === "false") {
+      throw AppError.serviceUnavailable(
+        "Upgrades are temporarily paused for maintenance. Please check back shortly.",
+        {}
+      );
+    }
+
     const { userId } = await auth();
 
     if (!userId) {

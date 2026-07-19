@@ -9,7 +9,8 @@ type ErrorCode =
   | "GENERATION_FAILED"
   | "WEBHOOK_VERIFICATION_FAILED"
   | "PAYMENT_ERROR"
-  | "INTERNAL_ERROR";
+  | "INTERNAL_ERROR"
+  | "SERVICE_UNAVAILABLE";
 
 interface ErrorContext {
   readonly [key: string]: unknown;
@@ -32,6 +33,7 @@ const CLIENT_SAFE_MESSAGES: Record<ErrorCode, string> = {
   WEBHOOK_VERIFICATION_FAILED: "Payment verification failed.",
   PAYMENT_ERROR: "Payment processing error. Please try again.",
   INTERNAL_ERROR: "An unexpected error occurred. Please try again later.",
+  SERVICE_UNAVAILABLE: "This service is temporarily unavailable. Please try again later.",
 } satisfies Record<ErrorCode, string>;
 
 export class AppError extends Error {
@@ -133,6 +135,15 @@ export class AppError extends Error {
       code: "INTERNAL_ERROR",
       message,
       statusCode: 500,
+      context,
+    });
+  }
+
+  static serviceUnavailable(message: string, context?: ErrorContext): AppError {
+    return new AppError({
+      code: "SERVICE_UNAVAILABLE",
+      message,
+      statusCode: 503,
       context,
     });
   }
