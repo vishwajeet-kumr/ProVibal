@@ -127,7 +127,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           />
           <PricingCard
             name="Pro"
-            price="$9"
+            price="$11"
             priceSuffix="/month"
             description="Unlimited projects + 50 follow-up runs per month for serious builders."
             features={PRO_FEATURES}
