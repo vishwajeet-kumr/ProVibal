@@ -8,7 +8,7 @@ CREATE TABLE public.generations (
     project_type TEXT NOT NULL,
     tech_stack TEXT NOT NULL,
     description TEXT NOT NULL,
-    foundation_prompt TEXT NOT NULL,
+    foundation_prompt JSONB NOT NULL,
     file_map JSONB NOT NULL,
     build_steps JSONB NOT NULL,
     follow_up_runs JSONB DEFAULT '[]'::jsonb NOT NULL,
