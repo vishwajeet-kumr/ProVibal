@@ -14,7 +14,7 @@ export interface UserEntitlements {
 
 export const FREE_FOLLOWUP_RUN_LIMIT = 2;
 export const PRO_MONTHLY_RUN_LIMIT = 50;
-export const TOPUP_RUN_GRANT = 15;
+export const TOPUP_RUN_GRANT = 5;
 
 export type FollowUpGateResult =
   | { allowed: true; consumeFrom: "free" | "monthly" | "topup" }

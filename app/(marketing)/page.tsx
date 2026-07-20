@@ -144,7 +144,7 @@ export default function HomePage() {
             Generate Your Free Kit →
           </Link>
           <p className="text-xs text-[var(--text-muted)]">
-            Free to try · No credit card · Works with Cursor, Windsurf,
+            Free to start · No credit card · Works with Cursor, Windsurf,
             Antigravity
           </p>
         </div>

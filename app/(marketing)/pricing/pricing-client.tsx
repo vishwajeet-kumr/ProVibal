@@ -26,7 +26,7 @@ const PRO_FEATURES = [
 ] as const;
 
 const REFILL_FEATURES = [
-  "+15 follow-up runs",
+  "+5 follow-up runs",
   "Use anytime — no expiry",
   "Stacks with monthly runs",
   "Available to all users",
@@ -128,6 +128,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           <PricingCard
             name="Pro"
             price="$9"
+            priceSuffix="/month"
             description="Unlimited projects + 50 follow-up runs per month for serious builders."
             features={PRO_FEATURES}
             isHighlighted={true}
@@ -138,10 +139,11 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           <PricingCard
             name="Refill"
             price="$5"
-            description="One-time top-up. 15 extra follow-up runs that never expire."
+            priceSuffix="one-time"
+            description="One-time top-up. 5 extra follow-up runs that never expire."
             features={REFILL_FEATURES}
             isHighlighted={false}
-            ctaLabel={isRefillLoading ? "Redirecting…" : "Buy 15-Run Top-Up"}
+            ctaLabel={isRefillLoading ? "Redirecting…" : "Buy 5-Run Top-Up"}
             onCtaClick={() => handleCheckout("refill_pack")}
             disabled={isAnyLoading || !paymentsEnabled}
           />

@@ -2,7 +2,7 @@
 
 import type { MetadataRoute } from "next";
 
-const BASE_URL = "https://provibal.dev";
+const BASE_URL = "https://provibal.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

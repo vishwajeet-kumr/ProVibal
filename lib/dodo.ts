@@ -6,8 +6,8 @@ import { env } from "@/config/env";
 import { AppError } from "@/lib/errors";
 
 const dodo = new DodoPayments({
-  bearerToken: env.DODO_PAYMENTS_API_KEY || "placeholder",
-  environment: env.DODO_ENVIRONMENT || "test_mode",
+  bearerToken: env.DODO_PAYMENTS_API_KEY,
+  environment: env.DODO_ENVIRONMENT,
 });
 
 export async function createCheckoutSession(

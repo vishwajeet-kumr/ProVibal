@@ -5,6 +5,6 @@ import { env } from "@/config/env";
 // from our Next.js Route Handlers (Server). Authentication is already handled by Clerk,
 // so we manually enforce user_id checks in our DB queries.
 export const supabaseAdmin = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder.supabase.co",
-  env.SUPABASE_SERVICE_ROLE_KEY || "placeholder"
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY
 );

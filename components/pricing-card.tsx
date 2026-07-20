@@ -7,6 +7,7 @@ import { Check } from "lucide-react";
 interface PricingCardProps {
   readonly name: string;
   readonly price: string;
+  readonly priceSuffix?: string;
   readonly description: string;
   readonly features: readonly string[];
   readonly isHighlighted: boolean;
@@ -18,6 +19,7 @@ interface PricingCardProps {
 export function PricingCard({
   name,
   price,
+  priceSuffix,
   description,
   features,
   isHighlighted,
@@ -48,8 +50,8 @@ export function PricingCard({
           <span className="font-serif text-4xl font-normal text-[var(--text-primary)]">
             {price}
           </span>
-          {price !== "Free" && (
-            <span className="mb-1 text-sm text-[var(--text-muted)]">/month</span>
+          {priceSuffix && (
+            <span className="mb-1 text-sm text-[var(--text-muted)]">{priceSuffix}</span>
           )}
         </div>
         <p className="mt-3 text-sm leading-relaxed text-[var(--text-muted)]">{description}</p>

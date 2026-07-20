@@ -50,7 +50,7 @@ export async function UsageMeter() {
         {/* Follow-up Runs */}
         <div>
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span className="text-[var(--text-muted)]">Follow-up Runs (Monthly)</span>
+            <span className="text-[var(--text-muted)]">{isPro ? "Follow-up Runs (Monthly)" : "Follow-up Runs"}</span>
             <span className="font-medium text-[var(--text-primary)]">
               {followUpsUsed} / {followUpsLimit}
             </span>

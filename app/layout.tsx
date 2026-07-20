@@ -48,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://provibal.dev",
+    url: "https://provibal.com",
     siteName: "Provibal",
     title: "Provibal — AI Prompt Kit Generator",
     description: "Generate production-grade vibe coding prompts instantly.",

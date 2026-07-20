@@ -5,6 +5,7 @@ type ErrorCode =
   | "AUTHENTICATION_ERROR"
   | "AUTHORIZATION_ERROR"
   | "CONFLICT_ERROR"
+  | "NOT_FOUND"
   | "RATE_LIMIT_EXCEEDED"
   | "GENERATION_FAILED"
   | "WEBHOOK_VERIFICATION_FAILED"
@@ -28,6 +29,7 @@ const CLIENT_SAFE_MESSAGES: Record<ErrorCode, string> = {
   AUTHENTICATION_ERROR: "Authentication required. Please sign in to continue.",
   AUTHORIZATION_ERROR: "You do not have access to this feature. Please upgrade your plan.",
   CONFLICT_ERROR: "This action conflicts with your current account state.",
+  NOT_FOUND: "The requested resource was not found.",
   RATE_LIMIT_EXCEEDED: "Free tier limit reached. Please try again later or upgrade to Pro.",
   GENERATION_FAILED: "Prompt generation failed. Please try again.",
   WEBHOOK_VERIFICATION_FAILED: "Payment verification failed.",
@@ -90,6 +92,15 @@ export class AppError extends Error {
       code: "CONFLICT_ERROR",
       message,
       statusCode: 409,
+      context,
+    });
+  }
+
+  static notFound(message: string, context?: ErrorContext): AppError {
+    return new AppError({
+      code: "NOT_FOUND",
+      message,
+      statusCode: 404,
       context,
     });
   }
