@@ -1,12 +1,14 @@
 "use client";
 
-// components/prompt-kit-output.tsx — Tabbed output — warm design system
+// components/prompt-kit-output.tsx — Tabbed output with section + full export — warm design system
 
-import { useState, useEffect } from "react";
-import { FileText, Map, Layers, Zap } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { FileText, Map, Layers, Zap, Download, ChevronDown } from "lucide-react";
 import type { PromptKit } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
 import { PaywallGate } from "@/components/paywall-gate";
+import { exportFullKit, exportAllFormats, exportSection } from "@/lib/export-kit";
+import type { SectionId } from "@/lib/export-kit";
 
 export type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
 
@@ -43,13 +45,112 @@ const proseClass = "whitespace-pre-wrap text-sm leading-relaxed text-[var(--text
 const tagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 font-mono text-xs text-[var(--text-muted)]";
 const depTagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 text-xs text-[var(--accent)]";
 
-function buildProjectMapText(kit: PromptKit): string {
-  const header = `Overview:\n${kit.projectMap.overview}\n\nFile Structure:\n`;
-  const rows = kit.projectMap.fileStructure
-    .map((f) => `${f.filePath.padEnd(50)} ${f.responsibility}`)
-    .join("\n");
-  return header + rows;
+// ─── Section Export Button ───────────────────────────────────────────
+
+function SectionExportButton({ kit, section }: { kit: PromptKit; section: SectionId }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
+        aria-label="Export section"
+      >
+        <Download size={12} />
+        <ChevronDown size={10} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-32 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button
+            onClick={() => { exportSection(kit, section, "md"); setOpen(false); }}
+            className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            Export .md
+          </button>
+          <button
+            onClick={() => { exportSection(kit, section, "xml"); setOpen(false); }}
+            className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            Export .xml
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
+
+// ─── Full Kit Export Dropdown ─────────────────────────────────────────
+
+function FullExportDropdown({ kit }: { kit: PromptKit }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
+      >
+        <Download size={14} />
+        Export Kit
+        <ChevronDown size={12} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          <button
+            onClick={() => { exportFullKit(kit, "md"); setOpen(false); }}
+            className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            Download as .md
+          </button>
+          <button
+            onClick={() => { exportFullKit(kit, "xml"); setOpen(false); }}
+            className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            Download as .xml
+          </button>
+          <button
+            onClick={() => { exportFullKit(kit, "pdf"); setOpen(false); }}
+            className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            Save as PDF
+          </button>
+          <div className="my-1 border-t border-[var(--border)]" />
+          <button
+            onClick={() => { exportAllFormats(kit); setOpen(false); }}
+            className="block w-full px-4 py-2 text-left text-sm font-semibold text-[var(--accent)] hover:bg-[var(--accent-light)]"
+          >
+            Download All Formats
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Tab content components ──────────────────────────────────────────
 
 function FoundationTab({ kit }: { kit: PromptKit }) {
   const keys = Object.keys(FOUNDATION_SECTION_LABELS) as (keyof PromptKit["foundation"])[];
@@ -69,12 +170,14 @@ function FoundationTab({ kit }: { kit: PromptKit }) {
 }
 
 function ProjectMapTab({ kit }: { kit: PromptKit }) {
+  const mapText = `Overview:\n${kit.projectMap.overview}\n\nFile Structure:\n` +
+    kit.projectMap.fileStructure.map((f) => `${f.filePath.padEnd(50)} ${f.responsibility}`).join("\n");
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-start justify-between gap-4">
         <p className="text-sm leading-relaxed text-[var(--text-muted)]">{kit.projectMap.overview}</p>
         <div className="ml-4 shrink-0">
-          <CopyButton text={buildProjectMapText(kit)} />
+          <CopyButton text={mapText} />
         </div>
       </div>
 
@@ -195,6 +298,8 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
   );
 }
 
+// ─── Main component ──────────────────────────────────────────────────
+
 export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitOutputProps) {
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab ?? "foundation");
 
@@ -204,25 +309,33 @@ export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitO
 
   return (
     <div className="flex flex-col">
-      {/* Tab bar */}
-      <div className="flex border-b border-[var(--border)] bg-[var(--bg-card)]">
-        {TABS.map((tab) => {
-          const isActive = tab.id === activeTab;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors duration-150 ${
-                isActive
-                  ? "border-b-2 border-[var(--accent)] text-[var(--accent)]"
-                  : "border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          );
-        })}
+      {/* Tab bar + export controls */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] bg-[var(--bg-card)] pb-0">
+        <div className="flex overflow-x-auto">
+          {TABS.map((tab) => {
+            const isActive = tab.id === activeTab;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors duration-150 ${
+                  isActive
+                    ? "border-b-2 border-[var(--accent)] text-[var(--accent)]"
+                    : "border-b-2 border-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Export controls — right side */}
+        <div className="flex items-center gap-2 px-4 pb-3 sm:pb-0">
+          <SectionExportButton kit={kit} section={activeTab as SectionId} />
+          <FullExportDropdown kit={kit} />
+        </div>
       </div>
 
       {/* Tab content */}

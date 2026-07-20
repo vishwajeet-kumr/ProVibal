@@ -75,3 +75,12 @@ body {
   animation: fadeUp 600ms ease-out 200ms forwards;
   opacity: 0;
 }
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 200ms ease-out forwards;
+}
