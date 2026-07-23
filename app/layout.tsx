@@ -5,6 +5,7 @@ import { Inter, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -102,6 +103,20 @@ export default function RootLayout({
             }}
           />
         </head>
+        
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-6SDBV0CGC3"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-6SDBV0CGC3');
+          `}
+        </Script>
+
         <body className="bg-[var(--bg)] min-h-screen flex flex-col">
           {children}
           <Toaster position="bottom-right" richColors />
