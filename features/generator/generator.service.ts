@@ -4,14 +4,20 @@ import { generateContent, generateContentStream } from "@/lib/gemini";
 import { AppError } from "@/lib/errors";
 import { FOUNDATION_SYSTEM_PROMPT } from "@/features/meta-prompt/foundation";
 import { FOLLOWUP_SYSTEM_PROMPT } from "@/features/meta-prompt/followup";
+import { SMART_PROTOCOL_SYSTEM_PROMPT } from "@/features/meta-prompt/smart-protocol";
 import type {
   ProjectInput,
   PromptKit,
   FollowUpChain,
+  SmartProtocolChain,
+  ProtocolDifficulty,
 } from "@/features/generator/generator.types";
 
 const FOUNDATION_TEMPERATURE = 0.4;
 const FOLLOWUP_TEMPERATURE = 0.6;
+const SMART_PROTOCOL_TEMPERATURE = 0.6;
+
+const VALID_DIFFICULTIES = new Set<ProtocolDifficulty>(["easy", "medium", "hard"]);
 
 function buildFoundationUserMessage(input: ProjectInput): string {
   return [
@@ -206,4 +212,63 @@ export async function generateFollowUpChain(
 
   const raw = parseJsonResponse(text, "FollowUpChain");
   return validateFollowUpChain(raw);
+}
+
+// ─── Smart Protocol ──────────────────────────────────────────────────
+
+function validateSmartProtocolChain(raw: unknown): SmartProtocolChain {
+  const root = assertObject(raw, "root");
+  const promptsRaw = assertArray(root["prompts"], "prompts");
+
+  if (promptsRaw.length < 4 || promptsRaw.length > 6) {
+    throw AppError.generationFailed(
+      `SmartProtocolChain validation failed: expected 4–6 prompts, got ${promptsRaw.length}`,
+      { received: promptsRaw.length }
+    );
+  }
+
+  const prompts = promptsRaw.map((item, index) => {
+    const p = assertObject(item, `prompts[${index}]`);
+    if (typeof p["order"] !== "number") {
+      throw AppError.generationFailed(
+        `SmartProtocolChain validation failed: "prompts[${index}].order" must be a number`,
+        { field: `prompts[${index}].order`, received: typeof p["order"] }
+      );
+    }
+
+    const difficulty = assertString(p["difficulty"], `prompts[${index}].difficulty`);
+    if (!VALID_DIFFICULTIES.has(difficulty as ProtocolDifficulty)) {
+      throw AppError.generationFailed(
+        `SmartProtocolChain validation failed: "prompts[${index}].difficulty" must be "easy", "medium", or "hard"`,
+        { field: `prompts[${index}].difficulty`, received: difficulty }
+      );
+    }
+
+    return {
+      order: p["order"] as number,
+      title: assertString(p["title"], `prompts[${index}].title`),
+      prompt: assertString(p["prompt"], `prompts[${index}].prompt`),
+      purpose: assertString(p["purpose"], `prompts[${index}].purpose`),
+      difficulty: difficulty as ProtocolDifficulty,
+      timeEstimate: assertString(p["timeEstimate"], `prompts[${index}].timeEstimate`),
+    };
+  });
+
+  return { prompts };
+}
+
+export async function generateSmartProtocol(
+  input: ProjectInput,
+  kit: PromptKit
+): Promise<SmartProtocolChain> {
+  const userMessage = buildFollowUpUserMessage(input, kit);
+
+  const { text } = await generateContent({
+    systemPrompt: SMART_PROTOCOL_SYSTEM_PROMPT,
+    userPrompt: userMessage,
+    temperature: SMART_PROTOCOL_TEMPERATURE,
+  });
+
+  const raw = parseJsonResponse(text, "SmartProtocolChain");
+  return validateSmartProtocolChain(raw);
 }

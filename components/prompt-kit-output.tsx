@@ -5,6 +5,7 @@
 import { useState, useEffect, useRef } from "react";
 import { FileText, Map, Layers, Zap, Download, ChevronDown, Clipboard, Check as CheckIcon } from "lucide-react";
 import type { PromptKit } from "@/features/generator/generator.types";
+import type { SmartProtocolPrompt, ProtocolDifficulty } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
 import { PaywallGate } from "@/components/paywall-gate";
 import { exportFullKit, exportAllFormats, exportSection, kitToCursorText } from "@/lib/export-kit";
@@ -45,6 +46,21 @@ const sectionTitleClass = "mb-2 text-[10px] font-semibold uppercase tracking-wid
 const proseClass = "whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-primary)]";
 const tagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 font-mono text-xs text-[var(--text-muted)]";
 const depTagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 text-xs text-[var(--accent)]";
+
+const DIFFICULTY_STYLES: Record<ProtocolDifficulty, { bg: string; text: string; label: string }> = {
+  easy:   { bg: "bg-emerald-100 dark:bg-emerald-950", text: "text-emerald-700 dark:text-emerald-300", label: "Easy" },
+  medium: { bg: "bg-amber-100 dark:bg-amber-950",   text: "text-amber-700 dark:text-amber-300",   label: "Medium" },
+  hard:   { bg: "bg-red-100 dark:bg-red-950",       text: "text-red-700 dark:text-red-300",       label: "Hard" },
+};
+
+function DifficultyBadge({ difficulty }: { difficulty: ProtocolDifficulty }) {
+  const style = DIFFICULTY_STYLES[difficulty];
+  return (
+    <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}>
+      {style.label}
+    </span>
+  );
+}
 
 // ─── Copy Full Kit Button ────────────────────────────────────────────
 
@@ -307,12 +323,44 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
     </div>
   );
 
+  // Check if this is a Smart Protocol chain (has difficulty field)
+  const isSmartProtocol =
+    kit.followUpChain !== null &&
+    kit.followUpChain.prompts.length > 0 &&
+    "difficulty" in kit.followUpChain.prompts[0];
+
   return (
     <PaywallGate isLocked={!isAuthenticated}>
       {kit.followUpChain === null ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[var(--border)] py-16 text-center">
           <Zap size={22} className="text-[#E2D9CF]" />
           <p className="text-sm text-[var(--text-muted)]">Provibal Protocol not generated yet.</p>
+        </div>
+      ) : isSmartProtocol ? (
+        <div className="flex flex-col gap-4">
+          {(kit.followUpChain.prompts as readonly SmartProtocolPrompt[]).map((item) => (
+            <div key={item.order} className={sectionClass}>
+              <div className="mb-3 flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="mb-1.5 flex items-center gap-2">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent-light)] text-xs font-bold text-[var(--accent)]">
+                      {item.order}
+                    </span>
+                    <h3 className="text-sm font-semibold text-[var(--text-primary)]">{item.title}</h3>
+                  </div>
+                  <p className="mt-0.5 text-xs text-[var(--text-muted)]">{item.purpose}</p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <DifficultyBadge difficulty={item.difficulty} />
+                    <span className="inline-flex items-center gap-1 rounded-md bg-[var(--bg)] px-2 py-0.5 text-xs text-[var(--text-muted)]">
+                      ⏱ {item.timeEstimate}
+                    </span>
+                  </div>
+                </div>
+                <CopyButton text={item.prompt} />
+              </div>
+              <p className={proseClass}>{item.prompt}</p>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex flex-col gap-4">

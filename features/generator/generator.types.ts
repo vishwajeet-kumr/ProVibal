@@ -74,6 +74,21 @@ export interface FollowUpChain {
   readonly prompts: readonly FollowUpPrompt[];
 }
 
+export type ProtocolDifficulty = "easy" | "medium" | "hard";
+
+export interface SmartProtocolPrompt {
+  readonly order: number;
+  readonly title: string;
+  readonly prompt: string;
+  readonly purpose: string;
+  readonly difficulty: ProtocolDifficulty;
+  readonly timeEstimate: string;
+}
+
+export interface SmartProtocolChain {
+  readonly prompts: readonly SmartProtocolPrompt[];
+}
+
 export interface PromptKit {
   readonly id?: string;
   readonly projectName: string;
@@ -82,5 +97,5 @@ export interface PromptKit {
   readonly foundation: FoundationPrompt;
   readonly projectMap: ProjectMapPrompt;
   readonly featureSequence: FeatureBuildSequence;
-  readonly followUpChain: FollowUpChain | null;
+  readonly followUpChain: FollowUpChain | SmartProtocolChain | null;
 }

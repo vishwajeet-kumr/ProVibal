@@ -3,7 +3,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEntitlementsFromClaims, canRunFollowUp, consumeFollowUpRun } from "@/lib/entitlements";
-import { generateFollowUpChain } from "@/features/generator/generator.service";
+import { generateSmartProtocol } from "@/features/generator/generator.service";
 import { projectInputSchema } from "@/features/generator/generator.schema";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
@@ -28,8 +28,8 @@ export async function POST(request: Request): Promise<NextResponse> {
     if (!gate.allowed) {
       throw AppError.authorization(
         gate.reason === "free_limit_reached"
-          ? "Free follow-up runs used. Upgrade to Pro for 50 runs/month."
-          : "Monthly runs used up. Buy a 15-run top-up or wait for renewal.",
+          ? "Free Protocol run used. Upgrade to Pro for unlimited Protocol access."
+          : "Protocol runs used up. Buy a top-up or wait for renewal.",
         { userId }
       );
     }
@@ -73,7 +73,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const followUpChain = await generateFollowUpChain(
+    const followUpChain = await generateSmartProtocol(
       parsed.data,
       kit as PromptKit
     );
