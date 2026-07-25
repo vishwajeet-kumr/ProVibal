@@ -73,10 +73,10 @@ function FollowUpCTA({ userId, followUpLoading, onGenerate }: FollowUpCTAProps) 
         <Zap size={22} className="text-[var(--accent)]" />
       </div>
       <h3 className="mb-2 font-serif text-lg text-[var(--text-primary)]">
-        Unlock Follow-up Prompts
+        Unlock Provibal Protocol
       </h3>
       <p className="mx-auto mb-5 max-w-sm text-sm text-[var(--text-muted)]">
-        Get 8 production-hardening prompts — debug, optimize, secure, and deploy
+        Get personalized production-hardening prompts — tailored to your project's stack and architecture
       </p>
       {!userId ? (
         <Link
@@ -97,7 +97,7 @@ function FollowUpCTA({ userId, followUpLoading, onGenerate }: FollowUpCTAProps) 
               Generating…
             </>
           ) : (
-            "Generate Follow-up Chain"
+            "Run Provibal Protocol"
           )}
         </button>
       )}
@@ -214,7 +214,7 @@ export function GenerateClient() {
       if (json.status === "success" && json.data) {
         setKit({ ...kit, followUpChain: json.data });
         setOutputTab("follow-ups");
-        toast.success("Follow-up chain ready!");
+        toast.success("Provibal Protocol ready!");
       } else {
         toast.error(json.error ?? "Follow-up generation failed.");
       }

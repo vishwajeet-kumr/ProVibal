@@ -24,7 +24,7 @@ export async function SubscriptionCard() {
           </p>
           <p className="text-sm text-[var(--text-muted)]">
             {isPro 
-              ? "Unlimited generations + 50 follow-ups/month" 
+              ? "Unlimited generations + full Provibal Protocol access" 
               : "Generate your first full prompt kit for free."}
           </p>
         </div>

@@ -20,9 +20,8 @@ function EasterEgg() {
       </span>
 
       <div
-        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${
-          revealed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${revealed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
+          }`}
       >
         <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 mt-4 max-w-md mx-auto lg:mx-0 text-center shadow-lg shadow-[var(--accent)]/5">
           <div className="text-4xl mb-3">🤖</div>
@@ -92,11 +91,10 @@ function HeroCard() {
           {["Foundation", "Project Map", "Build"].map((tab, i) => (
             <span
               key={tab}
-              className={`text-xs font-medium ${
-                i === 0
+              className={`text-xs font-medium ${i === 0
                   ? "border-b-2 border-[var(--accent)] pb-3 -mb-3 text-[var(--accent)]"
                   : "text-[var(--text-muted)]"
-              }`}
+                }`}
             >
               {tab}
             </span>
@@ -196,7 +194,7 @@ export function HeroSection() {
               See how it works →
             </Link>
           </div>
-          
+
           <EasterEgg />
 
           {/* Social proof */}

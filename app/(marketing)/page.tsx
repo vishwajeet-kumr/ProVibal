@@ -35,9 +35,8 @@ function FeatureCard({ icon, title, description, index }: FeatureCardProps & { i
   return (
     <div
       ref={ref}
-      className={`flex flex-col gap-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-7 transition-all duration-700 hover:shadow-md hover:shadow-[var(--accent)]/8 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
+      className={`flex flex-col gap-5 rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-7 transition-all duration-700 hover:shadow-md hover:shadow-[var(--accent)]/8 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
       style={{ transitionDelay: `${index * 100}ms` }}
     >
       <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--accent-light)] text-xl">
@@ -144,7 +143,7 @@ export default function HomePage() {
             Generate Your Free Kit →
           </Link>
           <p className="text-xs text-[var(--text-muted)]">
-            Free to start · No credit card · Works with Cursor, Windsurf,
+            Free to start · Works with Cursor, Windsurf,
             Antigravity
           </p>
         </div>

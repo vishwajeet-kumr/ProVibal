@@ -10,8 +10,8 @@ import { Loader2 } from "lucide-react";
 import { PricingCard } from "@/components/pricing-card";
 
 const FREE_FEATURES = [
-  "1–2 project kits",
-  "2 follow-up runs",
+  "1 full project kit",
+  "1 Protocol run",
   "Project map + file structure",
   "6–8 ordered build steps",
 ] as const;
@@ -19,14 +19,14 @@ const FREE_FEATURES = [
 const PRO_FEATURES = [
   "Everything in Free",
   "Unlimited project generations",
-  "50 follow-up runs/month",
+  "Unlimited Protocol runs",
   "Debug + optimize + deploy prompts",
   "Security hardening prompts",
   "Priority generation speed",
 ] as const;
 
 const REFILL_FEATURES = [
-  "+5 follow-up runs",
+  "+5 Protocol runs",
   "Use anytime — no expiry",
   "Stacks with monthly runs",
   "Available to all users",
@@ -122,14 +122,14 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
             description="Everything you need to generate your first production-grade prompt kit."
             features={FREE_FEATURES}
             isHighlighted={false}
-            ctaLabel="Start Free"
+            ctaLabel="Generate Your First Kit Free"
             onCtaClick={handleFreeClick}
           />
           <PricingCard
             name="Pro"
             price="$11"
             priceSuffix="/month"
-            description="Unlimited projects + 50 follow-up runs per month for serious builders."
+            description="Unlimited projects + full Provibal Protocol access for serious builders."
             features={PRO_FEATURES}
             isHighlighted={true}
             ctaLabel={isAlreadyPro ? "You're on Pro ✓" : isProLoading ? "Redirecting…" : "Upgrade to Pro"}
@@ -140,7 +140,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
             name="Refill"
             price="$5"
             priceSuffix="one-time"
-            description="One-time top-up. 5 extra follow-up runs that never expire."
+            description="One-time top-up. 5 extra Protocol runs that never expire."
             features={REFILL_FEATURES}
             isHighlighted={false}
             ctaLabel={isRefillLoading ? "Redirecting…" : "Buy 5-Run Top-Up"}

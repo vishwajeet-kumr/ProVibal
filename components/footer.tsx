@@ -81,7 +81,7 @@ export function Footer() {
         {/* Row 3 — Bottom bar */}
         <div className="mt-6 flex flex-col items-center justify-between gap-2 border-t border-[var(--border)] pt-6 sm:flex-row">
           <p className="text-xs text-[var(--text-muted)]">
-            © 2025 Provibal. All rights reserved.
+            © 2026 Provibal. All rights reserved.
           </p>
           <p className="text-xs text-[var(--text-muted)]">Built with ❤️ in India</p>
         </div>

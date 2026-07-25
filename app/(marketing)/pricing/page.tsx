@@ -9,7 +9,7 @@ import { PricingClient } from "./pricing-client";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Start free. Upgrade to Pro for 8 follow-up prompts that harden, optimize, and deploy your project.",
+    "Start free. Upgrade to Pro for the full Provibal Protocol — personalized prompts that harden, optimize, and ship your project.",
 };
 
 export default async function PricingPage() {

@@ -3,12 +3,13 @@
 // components/prompt-kit-output.tsx — Tabbed output with section + full export — warm design system
 
 import { useState, useEffect, useRef } from "react";
-import { FileText, Map, Layers, Zap, Download, ChevronDown } from "lucide-react";
+import { FileText, Map, Layers, Zap, Download, ChevronDown, Clipboard, Check as CheckIcon } from "lucide-react";
 import type { PromptKit } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
 import { PaywallGate } from "@/components/paywall-gate";
-import { exportFullKit, exportAllFormats, exportSection } from "@/lib/export-kit";
+import { exportFullKit, exportAllFormats, exportSection, kitToCursorText } from "@/lib/export-kit";
 import type { SectionId } from "@/lib/export-kit";
+import { toast } from "sonner";
 
 export type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
 
@@ -22,7 +23,7 @@ const TABS: readonly Tab[] = [
   { id: "foundation",     label: "Foundation",     icon: <FileText size={14} /> },
   { id: "project-map",   label: "Project Map",    icon: <Map size={14} /> },
   { id: "build-sequence",label: "Build Sequence", icon: <Layers size={14} /> },
-  { id: "follow-ups",    label: "Follow-ups",     icon: <Zap size={14} /> },
+  { id: "follow-ups",    label: "Protocol",      icon: <Zap size={14} /> },
 ] satisfies readonly Tab[];
 
 const FOUNDATION_SECTION_LABELS = {
@@ -44,6 +45,43 @@ const sectionTitleClass = "mb-2 text-[10px] font-semibold uppercase tracking-wid
 const proseClass = "whitespace-pre-wrap text-sm leading-relaxed text-[var(--text-primary)]";
 const tagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 font-mono text-xs text-[var(--text-muted)]";
 const depTagClass = "inline-flex rounded-md bg-[var(--accent-light)] px-2 py-0.5 text-xs text-[var(--accent)]";
+
+// ─── Copy Full Kit Button ────────────────────────────────────────────
+
+function CopyFullKitButton({ kit }: { kit: PromptKit }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      const text = kitToCursorText(kit);
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Full kit copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error("Failed to copy kit");
+    }
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
+    >
+      {copied ? (
+        <>
+          <CheckIcon size={14} />
+          Copied!
+        </>
+      ) : (
+        <>
+          <Clipboard size={14} />
+          Copy Full Kit
+        </>
+      )}
+    </button>
+  );
+}
 
 // ─── Section Export Button ───────────────────────────────────────────
 
@@ -274,7 +312,7 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
       {kit.followUpChain === null ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-[var(--border)] py-16 text-center">
           <Zap size={22} className="text-[#E2D9CF]" />
-          <p className="text-sm text-[var(--text-muted)]">Follow-up chain not generated yet.</p>
+          <p className="text-sm text-[var(--text-muted)]">Provibal Protocol not generated yet.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-4">
@@ -333,6 +371,7 @@ export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitO
 
         {/* Export controls — right side */}
         <div className="flex items-center gap-2 px-4 pb-3 sm:pb-0">
+          <CopyFullKitButton kit={kit} />
           <SectionExportButton kit={kit} section={activeTab as SectionId} />
           <FullExportDropdown kit={kit} />
         </div>

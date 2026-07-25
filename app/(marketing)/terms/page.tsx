@@ -49,9 +49,9 @@ export default function TermsPage() {
           <section>
             <h2 className={sectionTitleClass}>4. Pro Tier</h2>
             <p className={proseClass}>
-              Pro subscribers receive unlimited generations and access to 8 follow-up prompts per
-              kit covering debugging, optimization, security, and deployment. Pro access is billed
-              at ₹239/month.
+              Pro subscribers receive unlimited generations and full access to the Provibal Protocol —
+              personalized prompts covering debugging, optimization, security, and deployment. Pro access is billed
+              at $11/month.
             </p>
           </section>
 

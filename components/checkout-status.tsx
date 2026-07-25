@@ -127,8 +127,8 @@ export function CheckoutStatus() {
           <CheckCircle2 size={20} className="shrink-0 text-emerald-600 dark:text-emerald-400" />
           <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
             {hasSubscription
-              ? "You're now on Pro! Enjoy unlimited generations and 50 follow-up runs/month."
-              : "Refill applied! Your follow-up runs have been topped up."}
+              ? "You're now on Pro! Enjoy unlimited generations and full Provibal Protocol access."
+              : "Refill applied! Your Protocol runs have been topped up."}
           </p>
         </div>
       )}
