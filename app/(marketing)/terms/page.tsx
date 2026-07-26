@@ -51,7 +51,7 @@ export default function TermsPage() {
             <p className={proseClass}>
               Pro subscribers receive unlimited generations and full access to the Provibal Protocol —
               personalized prompts covering debugging, optimization, security, and deployment. Pro access is billed
-              at $11/month.
+              at $7/month.
             </p>
           </section>
 

@@ -127,7 +127,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           />
           <PricingCard
             name="Pro"
-            price="$11"
+            price="$7"
             priceSuffix="/month"
             description="Unlimited projects + full Provibal Protocol access for serious builders."
             features={PRO_FEATURES}
@@ -138,7 +138,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           />
           <PricingCard
             name="Refill"
-            price="$5"
+            price="$3"
             priceSuffix="one-time"
             description="One-time top-up. 5 extra Protocol runs that never expire."
             features={REFILL_FEATURES}
