@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { getUserEntitlements, PRO_MONTHLY_RUN_LIMIT, FREE_FOLLOWUP_RUN_LIMIT } from "@/lib/entitlements";
 import Link from "next/link";
+import { BuyRefillButton } from "./buy-refill-button";
 
 export async function UsageMeter() {
   const { userId } = await auth();
@@ -70,7 +71,11 @@ export async function UsageMeter() {
         </div>
       </div>
 
-      {!isPro && (
+      {isPro ? (
+        <div className="mt-6">
+          <BuyRefillButton />
+        </div>
+      ) : (
         <div className="mt-6">
           <Link
             href="/pricing"
