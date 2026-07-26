@@ -1,10 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
-import { PromptKitOutput } from "@/components/prompt-kit-output";
-import type { PromptKit } from "@/features/generator/generator.types";
+import type { PromptKit, ProjectInput } from "@/features/generator/generator.types";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { HistoryClient } from "./history-client";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +42,8 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
         : null,
   };
 
+  const projectInput = data.input as unknown as ProjectInput;
+
   return (
     <div className="mx-auto max-w-7xl">
       <div className="mb-6">
@@ -54,16 +56,7 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
         </Link>
       </div>
       
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-normal tracking-tight text-[var(--text-primary)]">
-          {promptKit.projectName}
-        </h1>
-        <p className="mt-2 text-sm text-[var(--text-muted)] capitalize">
-          {promptKit.projectType.replace('-', ' ')} • {promptKit.techStack === 'default' ? 'Auto-selected' : promptKit.techStack}
-        </p>
-      </div>
-
-      <PromptKitOutput kit={promptKit} isAuthenticated={true} />
+      <HistoryClient initialKit={promptKit} userId={userId} projectInput={projectInput} />
     </div>
   );
 }
