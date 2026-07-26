@@ -56,7 +56,7 @@ async function postCheckout(
   return { error: json.error ?? "Checkout failed. Please try again." };
 }
 
-export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro: boolean, paymentsEnabled: boolean }) {
+export function PricingClient({ isAlreadyPro, paymentsEnabled, isIndia }: { isAlreadyPro: boolean, paymentsEnabled: boolean, isIndia: boolean }) {
   const router = useRouter();
   const { userId } = useAuth();
   const [loadingProduct, setLoadingProduct] = useState<ProductType | null>(null);
@@ -127,7 +127,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           />
           <PricingCard
             name="Pro"
-            price="$7"
+            price={isIndia ? "₹299" : "$7"}
             priceSuffix="/month"
             description="Unlimited projects + full Provibal Protocol access for serious builders."
             features={PRO_FEATURES}
@@ -138,7 +138,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
           />
           <PricingCard
             name="Refill"
-            price="$3"
+            price={isIndia ? "₹99" : "$3"}
             priceSuffix="one-time"
             description="One-time top-up. 5 extra Protocol runs that never expire."
             features={REFILL_FEATURES}
@@ -159,7 +159,7 @@ export function PricingClient({ isAlreadyPro, paymentsEnabled }: { isAlreadyPro:
 
         {/* Footer note */}
         <p className="mt-10 text-center text-sm text-[var(--text-muted)]">
-          All prices in USD · Cancel anytime · No hidden fees
+          All prices in {isIndia ? "INR" : "USD"} · Cancel anytime · No hidden fees
         </p>
       </div>
     </main>

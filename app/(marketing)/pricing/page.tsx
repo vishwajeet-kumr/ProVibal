@@ -2,6 +2,7 @@
 
 import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
+import { headers } from "next/headers";
 import { getUserEntitlements } from "@/lib/entitlements";
 import { env } from "@/config/env";
 import { PricingClient } from "./pricing-client";
@@ -14,6 +15,10 @@ export const metadata: Metadata = {
 
 export default async function PricingPage() {
   const { userId } = await auth();
+  
+  const headersList = await headers();
+  const countryHeader = headersList.get("x-vercel-ip-country");
+  const isIndia = countryHeader === "IN";
 
   let isAlreadyPro = false;
   if (userId) {
@@ -23,5 +28,5 @@ export default async function PricingPage() {
 
   const paymentsEnabled = env.PAYMENTS_ENABLED === "true";
 
-  return <PricingClient isAlreadyPro={isAlreadyPro} paymentsEnabled={paymentsEnabled} />;
+  return <PricingClient isAlreadyPro={isAlreadyPro} paymentsEnabled={paymentsEnabled} isIndia={isIndia} />;
 }
