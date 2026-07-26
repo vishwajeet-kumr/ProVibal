@@ -13,7 +13,8 @@ export const dynamic = "force-dynamic";
 interface DodoWebhookPayload {
   type: string;
   data: {
-    product_id?: string;
+    subscription_id?: string | null;
+    product_cart?: Array<{ product_id: string; quantity: number }> | null;
     metadata?: Record<string, string>;
     [key: string]: unknown;
   };
@@ -36,9 +37,7 @@ async function handlePaymentSucceeded(payload: DodoWebhookPayload): Promise<void
     return;
   }
 
-  const productId = payload.data.product_id;
-
-  if (productId === env.DODO_PRO_PRODUCT_ID) {
+  if (payload.data.subscription_id) {
     const client = await clerkClient();
     await client.users.updateUserMetadata(clerkUserId, {
       publicMetadata: { plan: "pro", monthlyFollowUpRunsUsed: 0 },
@@ -47,10 +46,10 @@ async function handlePaymentSucceeded(payload: DodoWebhookPayload): Promise<void
     await supabaseAdmin.from("subscriptions").upsert(
       {
         user_id: clerkUserId,
-        dodo_subscription_id: typeof payload.data.subscription_id === "string" ? payload.data.subscription_id : "unknown",
+        dodo_subscription_id: payload.data.subscription_id,
         dodo_customer_id: typeof payload.data.customer_id === "string" ? payload.data.customer_id : "unknown",
         status: "active",
-        plan_id: productId,
+        plan_id: env.DODO_PRO_PRODUCT_ID,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" }
@@ -60,18 +59,21 @@ async function handlePaymentSucceeded(payload: DodoWebhookPayload): Promise<void
     return;
   }
 
-  if (productId === env.DODO_REFILL_PRODUCT_ID) {
-    const entitlements = await getUserEntitlements(clerkUserId);
-    const newBalance = entitlements.topupRunsRemaining + TOPUP_RUN_GRANT;
-    const client = await clerkClient();
-    await client.users.updateUserMetadata(clerkUserId, {
-      publicMetadata: { topupRunsRemaining: newBalance },
-    });
-    console.info("[dodo-webhook] Refill applied", { clerkUserId, newBalance });
-    return;
+  if (!payload.data.subscription_id && Array.isArray(payload.data.product_cart) && payload.data.product_cart.length > 0) {
+    const productId = payload.data.product_cart[0].product_id;
+    if (productId === env.DODO_REFILL_PRODUCT_ID) {
+      const entitlements = await getUserEntitlements(clerkUserId);
+      const newBalance = entitlements.topupRunsRemaining + TOPUP_RUN_GRANT;
+      const client = await clerkClient();
+      await client.users.updateUserMetadata(clerkUserId, {
+        publicMetadata: { topupRunsRemaining: newBalance },
+      });
+      console.info("[dodo-webhook] Refill applied", { clerkUserId, newBalance });
+      return;
+    }
   }
 
-  console.warn("[dodo-webhook] payment.succeeded for unknown product", { productId });
+  console.warn("[dodo-webhook] payment.succeeded for unknown product", { data: payload.data });
 }
 
 async function handleSubscriptionEnd(payload: DodoWebhookPayload): Promise<void> {
