@@ -7,6 +7,12 @@ const CONTACT_EMAIL = "contact.provibal@gmail.com";
 const PRODUCT_LINKS = [
   { label: "Generate", href: "/generate" },
   { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
+] as const;
+
+const RESOURCES_LINKS = [
+  { label: "Blog", href: "/blog" },
+  { label: "Changelog", href: "/changelog" },
 ] as const;
 
 const LEGAL_LINKS = [
@@ -72,8 +78,9 @@ export function Footer() {
         </div>
 
         {/* Row 2 — Link columns */}
-        <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
           <FooterLinkColumn title="Product" links={PRODUCT_LINKS} />
+          <FooterLinkColumn title="Resources" links={RESOURCES_LINKS} />
           <FooterLinkColumn title="Legal" links={LEGAL_LINKS} />
           <FooterLinkColumn title="Support" links={SUPPORT_LINKS} />
         </div>

@@ -1,5 +1,6 @@
 import { Sidebar } from "@/components/sidebar";
 import { Topbar } from "@/components/topbar";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 export default function AppLayout({
   children,
@@ -12,7 +13,9 @@ export default function AppLayout({
       <div className="flex flex-1 flex-col lg:pl-64">
         <Topbar />
         <main className="flex-1 p-4 pt-16 sm:p-6 sm:pt-6 lg:p-8 lg:pt-8">
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

@@ -1,71 +1,76 @@
 "use client";
 
-// components/hero-section.tsx — Two-column hero: headline + floating UI card preview
+// components/hero-section.tsx — Two-column hero: headline + floating UI card preview with real social proof
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-function EasterEgg() {
-  const [revealed, setRevealed] = useState(false);
+function LiveKitCounter() {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchCount() {
+      try {
+        const res = await fetch("/api/stats");
+        const data = await res.json();
+        if (typeof data.kitsGenerated === "number") {
+          setCount(data.kitsGenerated);
+        }
+      } catch {
+        // Fail silently — counter just won't show
+      }
+    }
+    fetchCount();
+  }, []);
+
+  if (count === null || count === 0) return null;
 
   return (
-    <div className="mt-2 flex flex-col items-start w-full">
-      <span
-        onClick={() => setRevealed(!revealed)}
-        className="text-xs text-[var(--text-muted)] cursor-pointer hover:text-[var(--accent)] underline decoration-dotted transition-colors"
-      >
-        {revealed
-          ? "🤫 Okay okay, you found it! Click to hide"
-          : "✨ Psst... there's something interesting about this site"}
-      </span>
-
-      <div
-        className={`w-full overflow-hidden transition-all duration-400 ease-in-out ${revealed ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-          }`}
-      >
-        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-2xl p-6 mt-4 max-w-md mx-auto lg:mx-0 text-center shadow-lg shadow-[var(--accent)]/5">
-          <div className="text-4xl mb-3">🤖</div>
-          <h3 className="font-serif text-lg text-[var(--text-primary)] mb-2">
-            Built entirely by Vibe Coding
-          </h3>
-          <p className="text-sm text-[var(--text-muted)] leading-relaxed mb-4">
-            Every single line of code on this website was generated using AI — no manual coding.
-            Just clear prompts, good architecture, and a vision. That's the power of vibe coding. 🚀
-          </p>
-          <span className="inline-block bg-[var(--accent-light)] text-[var(--accent)] text-xs font-medium px-3 py-1 rounded-full">
-            Powered by Claude + Gemini + Antigravity
-          </span>
-        </div>
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+        </span>
+        <span className="text-sm font-medium text-[var(--text-primary)]">
+          {count.toLocaleString()} kits generated
+        </span>
       </div>
+      <span className="text-xs text-[var(--text-muted)]">and counting</span>
     </div>
   );
 }
 
-function AvatarStack() {
-  const initials = ["V", "A", "M"];
-  const colors = ["bg-[var(--accent)]", "bg-[#6B6457]", "bg-[#A88B70]"];
+function SoloBadge() {
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex -space-x-2">
-        {initials.map((initial, i) => (
-          <div
-            key={initial}
-            className={`flex h-7 w-7 items-center justify-center rounded-full border-2 border-[var(--bg)] text-xs font-bold text-white ${colors[i]}`}
-          >
-            {initial}
-          </div>
-        ))}
-      </div>
-      <div>
-        <div className="flex items-center gap-0.5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <svg key={i} className="h-3 w-3 fill-[var(--accent)]" viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-          ))}
-        </div>
-        <p className="text-xs text-[var(--text-muted)]">Used by 100+ vibe coders</p>
-      </div>
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-[var(--text-muted)]">
+        🇮🇳 Built by a solo developer in India
+      </span>
+    </div>
+  );
+}
+
+function CompatibilityBadges() {
+  const ides = [
+    { name: "Cursor", icon: "⌘" },
+    { name: "Windsurf", icon: "🌊" },
+    { name: "Antigravity", icon: "🚀" },
+    { name: "Claude", icon: "◈" },
+  ];
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-[var(--text-muted)]">Works with:</span>
+      {ides.map((ide) => (
+        <span
+          key={ide.name}
+          className="inline-flex items-center gap-1 rounded-full border border-[var(--border)] bg-[var(--bg-card)] px-2.5 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:border-[var(--accent)] hover:text-[var(--text-primary)]"
+        >
+          <span>{ide.icon}</span>
+          {ide.name}
+        </span>
+      ))}
     </div>
   );
 }
@@ -185,20 +190,22 @@ export function HeroSection() {
               href="/generate"
               className="inline-flex items-center gap-2 rounded-lg bg-[var(--accent)] px-6 py-3 text-sm font-semibold text-white shadow-md shadow-[var(--accent)]/25 transition-all duration-150 hover:bg-[#7A5C3E] hover:-translate-y-px active:translate-y-0"
             >
-              Generate Free Kit
+              Generate Free Kit →
             </Link>
             <Link
-              href="#features"
+              href="#how-it-works"
               className="text-sm font-medium text-[var(--text-muted)] underline-offset-4 transition-colors hover:text-[var(--text-primary)] hover:underline"
             >
-              See how it works →
+              See how it works
             </Link>
           </div>
 
-          <EasterEgg />
-
-          {/* Social proof */}
-          <AvatarStack />
+          {/* Real social proof */}
+          <div className="flex flex-col gap-3">
+            <LiveKitCounter />
+            <CompatibilityBadges />
+            <SoloBadge />
+          </div>
         </div>
 
         {/* Right — 40% */}

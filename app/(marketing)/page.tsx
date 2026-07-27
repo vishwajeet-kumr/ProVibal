@@ -1,10 +1,14 @@
 "use client";
 
-// app/page.tsx — Landing page: hero + features + CTA
+// app/page.tsx — Landing page: hero → how it works → features → who it's for → pricing → faq → cta
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { HeroSection } from "@/components/hero-section";
+import { HowItWorksSection } from "@/components/how-it-works";
+import { WhoItsForSection } from "@/components/who-its-for";
+import { FAQSection } from "@/components/faq-section";
+import { PricingPreviewSection } from "@/components/pricing-preview";
 
 interface FeatureCardProps {
   icon: string;
@@ -69,15 +73,42 @@ const FEATURES: FeatureCardProps[] = [
     description:
       "6–8 ordered, self-contained steps each with its own prompt. Execute them one by one — no context loss, no drift, no broken dependencies.",
   },
+  {
+    icon: "⚡",
+    title: "Provibal Protocol",
+    description:
+      "Personalized follow-up prompts for debugging, security hardening, performance optimization, and deployment — tailored to your specific project.",
+  },
+  {
+    icon: "📦",
+    title: "Multi-Format Export",
+    description:
+      "Download your entire kit as Markdown, XML, or PDF. Copy the full kit to clipboard with one click. Ready for any workflow.",
+  },
+  {
+    icon: "🔧",
+    title: "10+ Tech Stacks",
+    description:
+      "React, Next.js, Vue, Svelte, Flutter, React Native, Express, FastAPI, Django, Spring Boot, Go — your prompts adapt to your stack.",
+  },
 ];
 
 
 export default function HomePage() {
   return (
     <div className="bg-[var(--bg)]">
+      {/* 1. Hero */}
       <HeroSection />
 
-      {/* Features section */}
+      {/* 2. How It Works */}
+      <HowItWorksSection />
+
+      {/* Divider */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="border-t border-[var(--border)]" />
+      </div>
+
+      {/* 3. Features section (expanded to 6) */}
       <section
         id="features"
         className="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8"
@@ -97,20 +128,29 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Cards grid */}
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
+        {/* Cards grid — now 6 cards in 3 columns */}
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature, i) => (
             <FeatureCard key={feature.title} index={i} {...feature} />
           ))}
         </div>
       </section>
 
+      {/* 4. Who It's For */}
+      <WhoItsForSection />
+
       {/* Divider */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="border-t border-[var(--border)]" />
       </div>
 
-      {/* CTA section */}
+      {/* 5. Pricing Preview */}
+      <PricingPreviewSection />
+
+      {/* 6. FAQ */}
+      <FAQSection />
+
+      {/* 7. Final CTA section */}
       <section className="bg-[var(--accent-light)]">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-7 px-4 py-24 text-center sm:px-6 lg:px-8">
           <h2 className="font-serif text-4xl font-normal leading-tight text-[var(--text-primary)] sm:text-5xl">
@@ -119,7 +159,7 @@ export default function HomePage() {
           </h2>
           <p className="max-w-md text-base text-[var(--text-muted)]">
             Generate your first production-grade prompt kit in under 30 seconds.
-            No account required.
+            No credit card required.
           </p>
           <Link
             href="/generate"
