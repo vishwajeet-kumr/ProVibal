@@ -3,7 +3,7 @@
 // components/prompt-kit-output.tsx — Tabbed output with section + full export — warm design system
 
 import { useState, useEffect, useRef } from "react";
-import { FileText, Map, Layers, Zap, Download, ChevronDown, Clipboard, Check as CheckIcon } from "lucide-react";
+import { FileText, Map, Layers, Zap, Download, ChevronDown, Clipboard, Check as CheckIcon, Lock } from "lucide-react";
 import type { PromptKit } from "@/features/generator/generator.types";
 import type { SmartProtocolPrompt, ProtocolDifficulty } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
@@ -38,6 +38,7 @@ const FOUNDATION_SECTION_LABELS = {
 interface PromptKitOutputProps {
   readonly kit: PromptKit;
   readonly isAuthenticated: boolean;
+  readonly isPro: boolean;
   readonly defaultTab?: TabId;
 }
 
@@ -64,10 +65,14 @@ function DifficultyBadge({ difficulty }: { difficulty: ProtocolDifficulty }) {
 
 // ─── Copy Full Kit Button ────────────────────────────────────────────
 
-function CopyFullKitButton({ kit }: { kit: PromptKit }) {
+function CopyFullKitButton({ kit, isPro }: { kit: PromptKit; isPro: boolean }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
+    if (!isPro) {
+      toast.error("Upgrade to Pro to copy full kit", { description: "Export features are available on the Pro plan." });
+      return;
+    }
     try {
       const text = kitToCursorText(kit);
       await navigator.clipboard.writeText(text);
@@ -89,9 +94,14 @@ function CopyFullKitButton({ kit }: { kit: PromptKit }) {
           <CheckIcon size={14} />
           Copied!
         </>
-      ) : (
+      ) : isPro ? (
         <>
           <Clipboard size={14} />
+          Copy Full Kit
+        </>
+      ) : (
+        <>
+          <Lock size={14} />
           Copy Full Kit
         </>
       )}
@@ -101,7 +111,7 @@ function CopyFullKitButton({ kit }: { kit: PromptKit }) {
 
 // ─── Section Export Button ───────────────────────────────────────────
 
-function SectionExportButton({ kit, section }: { kit: PromptKit; section: SectionId }) {
+function SectionExportButton({ kit, section, isPro }: { kit: PromptKit; section: SectionId; isPro: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -114,6 +124,16 @@ function SectionExportButton({ kit, section }: { kit: PromptKit; section: Sectio
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  function handleExport(format: "md" | "xml") {
+    if (!isPro) {
+      toast.error("Upgrade to Pro to export sections", { description: "Export features are available on the Pro plan." });
+      setOpen(false);
+      return;
+    }
+    exportSection(kit, section, format);
+    setOpen(false);
+  }
 
   return (
     <div ref={ref} className="relative">
@@ -122,23 +142,34 @@ function SectionExportButton({ kit, section }: { kit: PromptKit; section: Sectio
         className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
         aria-label="Export section"
       >
-        <Download size={12} />
+        {isPro ? <Download size={12} /> : <Lock size={12} />}
         <ChevronDown size={10} />
       </button>
       {open && (
         <div className="absolute right-0 top-full z-20 mt-1 w-32 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
           <button
-            onClick={() => { exportSection(kit, section, "md"); setOpen(false); }}
+            onClick={() => handleExport("md")}
             className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Export .md
           </button>
           <button
-            onClick={() => { exportSection(kit, section, "xml"); setOpen(false); }}
+            onClick={() => handleExport("xml")}
             className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Export .xml
           </button>
+          {!isPro && (
+            <>
+              <div className="my-1 border-t border-[var(--border)]" />
+              <a
+                href="/pricing"
+                className="block w-full px-3 py-1.5 text-left text-xs font-semibold text-[var(--accent)] hover:bg-[var(--accent-light)]"
+              >
+                Upgrade to Pro
+              </a>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -147,7 +178,7 @@ function SectionExportButton({ kit, section }: { kit: PromptKit; section: Sectio
 
 // ─── Full Kit Export Dropdown ─────────────────────────────────────────
 
-function FullExportDropdown({ kit }: { kit: PromptKit }) {
+function FullExportDropdown({ kit, isPro }: { kit: PromptKit; isPro: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -161,43 +192,74 @@ function FullExportDropdown({ kit }: { kit: PromptKit }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  function handleExport(format: "md" | "xml" | "pdf") {
+    if (!isPro) {
+      toast.error("Upgrade to Pro to export kits", { description: "Export features are available on the Pro plan." });
+      setOpen(false);
+      return;
+    }
+    exportFullKit(kit, format);
+    setOpen(false);
+  }
+
+  function handleExportAll() {
+    if (!isPro) {
+      toast.error("Upgrade to Pro to export kits", { description: "Export features are available on the Pro plan." });
+      setOpen(false);
+      return;
+    }
+    exportAllFormats(kit);
+    setOpen(false);
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
         className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
       >
-        <Download size={14} />
+        {isPro ? <Download size={14} /> : <Lock size={14} />}
         Export Kit
         <ChevronDown size={12} />
       </button>
       {open && (
         <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
           <button
-            onClick={() => { exportFullKit(kit, "md"); setOpen(false); }}
+            onClick={() => handleExport("md")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Download as .md
           </button>
           <button
-            onClick={() => { exportFullKit(kit, "xml"); setOpen(false); }}
+            onClick={() => handleExport("xml")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Download as .xml
           </button>
           <button
-            onClick={() => { exportFullKit(kit, "pdf"); setOpen(false); }}
+            onClick={() => handleExport("pdf")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Save as PDF
           </button>
           <div className="my-1 border-t border-[var(--border)]" />
           <button
-            onClick={() => { exportAllFormats(kit); setOpen(false); }}
+            onClick={handleExportAll}
             className="block w-full px-4 py-2 text-left text-sm font-semibold text-[var(--accent)] hover:bg-[var(--accent-light)]"
           >
             Download All Formats
           </button>
+          {!isPro && (
+            <>
+              <div className="my-1 border-t border-[var(--border)]" />
+              <a
+                href="/pricing"
+                className="block w-full px-4 py-2 text-left text-sm font-semibold text-[var(--accent)] hover:bg-[var(--accent-light)]"
+              >
+                ✨ Upgrade to Pro
+              </a>
+            </>
+          )}
         </div>
       )}
     </div>
@@ -386,7 +448,7 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
 
 // ─── Main component ──────────────────────────────────────────────────
 
-export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitOutputProps) {
+export function PromptKitOutput({ kit, isAuthenticated, isPro, defaultTab }: PromptKitOutputProps) {
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab ?? "foundation");
 
   useEffect(() => {
@@ -419,9 +481,9 @@ export function PromptKitOutput({ kit, isAuthenticated, defaultTab }: PromptKitO
 
         {/* Export controls — right side */}
         <div className="flex items-center gap-2 px-4 pb-3 sm:pb-0">
-          <CopyFullKitButton kit={kit} />
-          <SectionExportButton kit={kit} section={activeTab as SectionId} />
-          <FullExportDropdown kit={kit} />
+          <CopyFullKitButton kit={kit} isPro={isPro} />
+          <SectionExportButton kit={kit} section={activeTab as SectionId} isPro={isPro} />
+          <FullExportDropdown kit={kit} isPro={isPro} />
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth, useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -127,7 +127,7 @@ function PostGenerationView({
               </span>
             </div>
           </div>
-          <PromptKitOutput kit={kit} isAuthenticated={!!userId} defaultTab={outputTab} />
+          <PromptKitOutput kit={kit} isAuthenticated={!!userId} isPro={isPro} defaultTab={outputTab} />
         </div>
 
         <IdeRulesExport
@@ -161,6 +161,45 @@ export function GenerateClient() {
   const [ideRulesLoading, setIdeRulesLoading] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<ProjectInput | null>(null);
   const [outputTab, setOutputTab] = useState<TabId>("foundation");
+
+  // ─── Session persistence: restore on mount ───────────────────────
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("provibal_generate_session");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.kit) setKit(parsed.kit);
+        if (parsed.formData) setCurrentFormData(parsed.formData);
+        if (parsed.ideRulesBundle) setIdeRulesBundle(parsed.ideRulesBundle);
+        if (parsed.outputTab) setOutputTab(parsed.outputTab);
+      }
+    } catch {
+      // Silently ignore parse errors
+    }
+  }, []);
+
+  // ─── Session persistence: save on state changes ──────────────────
+  const saveSession = useCallback(() => {
+    try {
+      if (kit) {
+        sessionStorage.setItem(
+          "provibal_generate_session",
+          JSON.stringify({
+            kit,
+            formData: currentFormData,
+            ideRulesBundle,
+            outputTab,
+          })
+        );
+      }
+    } catch {
+      // Silently ignore storage errors (quota, etc.)
+    }
+  }, [kit, currentFormData, ideRulesBundle, outputTab]);
+
+  useEffect(() => {
+    saveSession();
+  }, [saveSession]);
 
   async function handleSubmit(data: ProjectInput): Promise<void> {
     setCurrentFormData(data);
@@ -237,6 +276,11 @@ export function GenerateClient() {
     setCurrentFormData(null);
     setIdeRulesBundle(null);
     setOutputTab("foundation");
+    try {
+      sessionStorage.removeItem("provibal_generate_session");
+    } catch {
+      // Silently ignore
+    }
   }
 
   return (

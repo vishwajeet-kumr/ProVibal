@@ -42,7 +42,12 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
         : null,
   };
 
-  const projectInput = data.input as unknown as ProjectInput;
+  const projectInput: ProjectInput = {
+    projectName: data.project_name,
+    projectType: data.project_type,
+    techStack: data.tech_stack,
+    description: data.description,
+  };
 
   return (
     <div className="mx-auto max-w-7xl">

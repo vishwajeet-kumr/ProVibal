@@ -1,15 +1,23 @@
 "use client";
 
 import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
 import { FollowUpCTA } from "@/components/follow-up-cta";
-import type { PromptKit, ProjectInput, FollowUpChain } from "@/features/generator/generator.types";
+import { IdeRulesExport } from "@/components/ide-rules-export";
+import type { PromptKit, ProjectInput, FollowUpChain, IdeRulesBundle } from "@/features/generator/generator.types";
 
 interface ApiFollowUpResponse {
   status: "success" | "error";
   data?: FollowUpChain;
+  error?: string;
+}
+
+interface ApiIdeRulesResponse {
+  status: "success" | "error";
+  data?: IdeRulesBundle;
   error?: string;
 }
 
@@ -22,8 +30,12 @@ export function HistoryClient({
   userId: string;
   projectInput: ProjectInput;
 }) {
+  const { user } = useUser();
+  const isPro = (user?.publicMetadata as Record<string, unknown> | undefined)?.plan === "pro";
   const [kit, setKit] = useState<PromptKit>(initialKit);
   const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [ideRulesBundle, setIdeRulesBundle] = useState<IdeRulesBundle | null>(null);
+  const [ideRulesLoading, setIdeRulesLoading] = useState(false);
   const [outputTab, setOutputTab] = useState<TabId>("foundation");
 
   async function handleGenerateFollowUps(): Promise<void> {
@@ -49,6 +61,28 @@ export function HistoryClient({
     }
   }
 
+  async function handleGenerateIdeRules(): Promise<void> {
+    setIdeRulesLoading(true);
+    try {
+      const response = await fetch("/api/export/ide-rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: projectInput, kit }),
+      });
+      const json = (await response.json()) as ApiIdeRulesResponse;
+      if (json.status === "success" && json.data) {
+        setIdeRulesBundle(json.data);
+        toast.success("IDE rules generated!");
+      } else {
+        toast.error(json.error ?? "IDE rules generation failed.");
+      }
+    } catch {
+      toast.error("Network error. Check your connection.");
+    } finally {
+      setIdeRulesLoading(false);
+    }
+  }
+
   return (
     <>
       <div className="mb-8">
@@ -60,7 +94,15 @@ export function HistoryClient({
         </p>
       </div>
 
-      <PromptKitOutput kit={kit} isAuthenticated={!!userId} defaultTab={outputTab} />
+      <PromptKitOutput kit={kit} isAuthenticated={!!userId} isPro={isPro} defaultTab={outputTab} />
+
+      <IdeRulesExport
+        bundle={ideRulesBundle}
+        isLoading={ideRulesLoading}
+        isPro={isPro}
+        projectName={kit.projectName}
+        onGenerate={handleGenerateIdeRules}
+      />
 
       {kit.followUpChain === null && (
         <FollowUpCTA
