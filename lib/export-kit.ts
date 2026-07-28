@@ -1,6 +1,7 @@
 // lib/export-kit.ts — Export prompt kits in MD, XML, and PDF formats
 
 import type { PromptKit } from "@/features/generator/generator.types";
+import type { IdeRulesBundle } from "@/features/generator/generator.types";
 
 type SectionId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
 
@@ -348,3 +349,35 @@ export function kitToCursorText(kit: PromptKit): string {
 }
 
 export type { SectionId };
+
+// ─── IDE Rules exports ───────────────────────────────────────────────
+
+export function downloadIdeRule(
+  content: string,
+  filename: string
+): void {
+  downloadBlob(content, filename, "text/plain");
+}
+
+export async function downloadIdeRulesZip(
+  bundle: IdeRulesBundle,
+  projectName: string
+): Promise<void> {
+  const JSZip = (await import("jszip")).default;
+  const zip = new JSZip();
+  const slug = slugify(projectName);
+
+  zip.file(".cursorrules", bundle.cursorRules);
+  zip.file(".windsurfrules", bundle.windsurfRules);
+  zip.file("AGENTS.md", bundle.agentsMd);
+
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${slug}-ide-rules.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}

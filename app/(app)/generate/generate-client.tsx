@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Zap, Loader2, LogIn } from "lucide-react";
@@ -10,7 +10,8 @@ import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
 import { GenerationLoader } from "@/components/generation-loader";
 import { FollowUpCTA } from "@/components/follow-up-cta";
-import type { PromptKit, ProjectInput, FollowUpChain } from "@/features/generator/generator.types";
+import { IdeRulesExport } from "@/components/ide-rules-export";
+import type { PromptKit, ProjectInput, FollowUpChain, IdeRulesBundle } from "@/features/generator/generator.types";
 
 interface ApiGenerateResponse {
   status: "success" | "error";
@@ -21,6 +22,12 @@ interface ApiGenerateResponse {
 interface ApiFollowUpResponse {
   status: "success" | "error";
   data?: FollowUpChain;
+  error?: string;
+}
+
+interface ApiIdeRulesResponse {
+  status: "success" | "error";
+  data?: IdeRulesBundle;
   error?: string;
 }
 
@@ -65,23 +72,31 @@ function SignInPrompt() {
 interface PostGenerationProps {
   readonly kit: PromptKit;
   readonly userId: string | null | undefined;
+  readonly isPro: boolean;
   readonly isLoading: boolean;
   readonly followUpLoading: boolean;
+  readonly ideRulesBundle: IdeRulesBundle | null;
+  readonly ideRulesLoading: boolean;
   readonly outputTab: TabId;
   readonly onClear: () => void;
   readonly onSubmit: (data: ProjectInput) => Promise<void>;
   readonly onGenerateFollowUps: () => void;
+  readonly onGenerateIdeRules: () => void;
 }
 
 function PostGenerationView({
   kit,
   userId,
+  isPro,
   isLoading,
   followUpLoading,
+  ideRulesBundle,
+  ideRulesLoading,
   outputTab,
   onClear,
   onSubmit,
   onGenerateFollowUps,
+  onGenerateIdeRules,
 }: PostGenerationProps) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[360px_1fr]">
@@ -115,6 +130,14 @@ function PostGenerationView({
           <PromptKitOutput kit={kit} isAuthenticated={!!userId} defaultTab={outputTab} />
         </div>
 
+        <IdeRulesExport
+          bundle={ideRulesBundle}
+          isLoading={ideRulesLoading}
+          isPro={isPro}
+          projectName={kit.projectName}
+          onGenerate={onGenerateIdeRules}
+        />
+
         {kit.followUpChain === null && (
           <FollowUpCTA
             userId={userId}
@@ -129,9 +152,13 @@ function PostGenerationView({
 
 export function GenerateClient() {
   const { userId, isLoaded } = useAuth();
+  const { user } = useUser();
+  const isPro = (user?.publicMetadata as Record<string, unknown> | undefined)?.plan === "pro";
   const [kit, setKit] = useState<PromptKit | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [followUpLoading, setFollowUpLoading] = useState(false);
+  const [ideRulesBundle, setIdeRulesBundle] = useState<IdeRulesBundle | null>(null);
+  const [ideRulesLoading, setIdeRulesLoading] = useState(false);
   const [currentFormData, setCurrentFormData] = useState<ProjectInput | null>(null);
   const [outputTab, setOutputTab] = useState<TabId>("foundation");
 
@@ -182,9 +209,33 @@ export function GenerateClient() {
     }
   }
 
+  async function handleGenerateIdeRules(): Promise<void> {
+    if (!kit || !currentFormData) return;
+    setIdeRulesLoading(true);
+    try {
+      const response = await fetch("/api/export/ide-rules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ input: currentFormData, kit }),
+      });
+      const json = (await response.json()) as ApiIdeRulesResponse;
+      if (json.status === "success" && json.data) {
+        setIdeRulesBundle(json.data);
+        toast.success("IDE rules generated!");
+      } else {
+        toast.error(json.error ?? "IDE rules generation failed.");
+      }
+    } catch {
+      toast.error("Network error. Check your connection.");
+    } finally {
+      setIdeRulesLoading(false);
+    }
+  }
+
   function handleClear(): void {
     setKit(null);
     setCurrentFormData(null);
+    setIdeRulesBundle(null);
     setOutputTab("foundation");
   }
 
@@ -212,12 +263,16 @@ export function GenerateClient() {
           <PostGenerationView
             kit={kit}
             userId={userId}
+            isPro={isPro}
             isLoading={isLoading}
             followUpLoading={followUpLoading}
+            ideRulesBundle={ideRulesBundle}
+            ideRulesLoading={ideRulesLoading}
             outputTab={outputTab}
             onClear={handleClear}
             onSubmit={handleSubmit}
             onGenerateFollowUps={handleGenerateFollowUps}
+            onGenerateIdeRules={handleGenerateIdeRules}
           />
         )}
       </div>

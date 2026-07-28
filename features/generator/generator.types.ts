@@ -99,3 +99,9 @@ export interface PromptKit {
   readonly featureSequence: FeatureBuildSequence;
   readonly followUpChain: FollowUpChain | SmartProtocolChain | null;
 }
+
+export interface IdeRulesBundle {
+  readonly cursorRules: string;
+  readonly windsurfRules: string;
+  readonly agentsMd: string;
+}

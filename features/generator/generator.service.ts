@@ -5,12 +5,14 @@ import { AppError } from "@/lib/errors";
 import { FOUNDATION_SYSTEM_PROMPT } from "@/features/meta-prompt/foundation";
 import { FOLLOWUP_SYSTEM_PROMPT } from "@/features/meta-prompt/followup";
 import { SMART_PROTOCOL_SYSTEM_PROMPT } from "@/features/meta-prompt/smart-protocol";
+import { IDE_RULES_SYSTEM_PROMPT } from "@/features/meta-prompt/ide-rules";
 import type {
   ProjectInput,
   PromptKit,
   FollowUpChain,
   SmartProtocolChain,
   ProtocolDifficulty,
+  IdeRulesBundle,
 } from "@/features/generator/generator.types";
 
 const FOUNDATION_TEMPERATURE = 0.4;
@@ -271,4 +273,54 @@ export async function generateSmartProtocol(
 
   const raw = parseJsonResponse(text, "SmartProtocolChain");
   return validateSmartProtocolChain(raw);
+}
+
+// ─── IDE Rules Generator ─────────────────────────────────────────────
+
+const IDE_RULES_TEMPERATURE = 0.4;
+
+function validateIdeRulesBundle(raw: unknown): IdeRulesBundle {
+  const root = assertObject(raw, "root");
+
+  const cursorRules = assertString(root["cursorRules"], "cursorRules");
+  const windsurfRules = assertString(root["windsurfRules"], "windsurfRules");
+  const agentsMd = assertString(root["agentsMd"], "agentsMd");
+
+  // Ensure each rule file has meaningful content (at least 200 chars)
+  if (cursorRules.length < 200) {
+    throw AppError.generationFailed(
+      "IdeRulesBundle validation failed: cursorRules is too short — expected substantial rule content",
+      { field: "cursorRules", received: cursorRules.length }
+    );
+  }
+  if (windsurfRules.length < 200) {
+    throw AppError.generationFailed(
+      "IdeRulesBundle validation failed: windsurfRules is too short — expected substantial rule content",
+      { field: "windsurfRules", received: windsurfRules.length }
+    );
+  }
+  if (agentsMd.length < 200) {
+    throw AppError.generationFailed(
+      "IdeRulesBundle validation failed: agentsMd is too short — expected substantial rule content",
+      { field: "agentsMd", received: agentsMd.length }
+    );
+  }
+
+  return { cursorRules, windsurfRules, agentsMd };
+}
+
+export async function generateIdeRules(
+  input: ProjectInput,
+  kit: PromptKit
+): Promise<IdeRulesBundle> {
+  const userMessage = buildFollowUpUserMessage(input, kit);
+
+  const { text } = await generateContent({
+    systemPrompt: IDE_RULES_SYSTEM_PROMPT,
+    userPrompt: userMessage,
+    temperature: IDE_RULES_TEMPERATURE,
+  });
+
+  const raw = parseJsonResponse(text, "IdeRulesBundle");
+  return validateIdeRulesBundle(raw);
 }
