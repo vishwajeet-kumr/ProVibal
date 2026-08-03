@@ -37,9 +37,8 @@ function Step({ number, icon, title, description, detail, index }: StepProps) {
   return (
     <div
       ref={ref}
-      className={`relative flex flex-col items-center gap-5 text-center transition-all duration-700 ${
-        isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-      }`}
+      className={`relative flex flex-col items-center gap-5 text-center transition-all duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+        }`}
       style={{ transitionDelay: `${index * 150}ms` }}
     >
       {/* Step number + icon */}
@@ -82,7 +81,7 @@ const STEPS: Omit<StepProps, "index">[] = [
     icon: <Sparkles size={26} />,
     title: "AI Generates Your Kit",
     description:
-      "Provibal's engine analyzes your description and generates a complete Foundation Prompt, Project Map, and Build Sequence — all tailored to your stack.",
+      "Provibal's engine analyzes your description and generates a complete Foundation Prompt, Project Map, and Build Sequence.",
     detail: "Powered by Gemini 2.5 Flash",
   },
   {
