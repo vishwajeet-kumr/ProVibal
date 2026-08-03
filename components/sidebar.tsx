@@ -25,7 +25,9 @@ const NAV_ITEMS = [
   { label: "Contact", href: "/contact", icon: Mail },
 ];
 
-function SidebarContent({ isPro, pathname }: { isPro: boolean; pathname: string }) {
+type Plan = "free" | "starter" | "pro";
+
+function SidebarContent({ plan, pathname }: { plan: Plan; pathname: string }) {
   return (
     <>
       {/* Nav */}
@@ -50,14 +52,14 @@ function SidebarContent({ isPro, pathname }: { isPro: boolean; pathname: string 
         })}
       </nav>
 
-      {/* Upgrade CTA — only for free users */}
-      {!isPro && (
+      {/* Upgrade CTA — for free and starter users */}
+      {plan !== "pro" && (
         <div className="p-4 border-t border-[var(--border)]">
           <Link
             href="/pricing"
             className="flex items-center justify-center gap-2 rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#7A5A3C]"
           >
-            Upgrade to Pro
+            {plan === "starter" ? "Upgrade to Pro" : "Upgrade Plan"}
             <ArrowUpRight size={14} />
           </Link>
         </div>
@@ -66,7 +68,7 @@ function SidebarContent({ isPro, pathname }: { isPro: boolean; pathname: string 
   );
 }
 
-function BrandHeader({ isPro }: { isPro: boolean }) {
+function BrandHeader({ plan }: { plan: Plan }) {
   return (
     <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-[var(--border)]">
       <Link
@@ -75,9 +77,9 @@ function BrandHeader({ isPro }: { isPro: boolean }) {
       >
         Provibal
       </Link>
-      {isPro && (
+      {plan !== "free" && (
         <span className="rounded-full bg-[var(--accent)] px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white">
-          Pro
+          {plan === "pro" ? "Pro" : "Starter"}
         </span>
       )}
     </div>
@@ -87,7 +89,8 @@ function BrandHeader({ isPro }: { isPro: boolean }) {
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useUser();
-  const isPro = user?.publicMetadata?.plan === "pro";
+  const userPlan = (user?.publicMetadata?.plan as string | undefined);
+  const plan: Plan = userPlan === "pro" ? "pro" : userPlan === "starter" ? "starter" : "free";
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile sidebar on navigation
@@ -105,8 +108,8 @@ export function Sidebar() {
     <>
       {/* Desktop sidebar — always visible on lg+ */}
       <aside className="fixed inset-y-0 left-0 z-50 hidden w-64 flex-col border-r border-[var(--border)] bg-[var(--bg-card)] lg:flex">
-        <BrandHeader isPro={isPro} />
-        <SidebarContent isPro={isPro} pathname={pathname} />
+        <BrandHeader plan={plan} />
+        <SidebarContent plan={plan} pathname={pathname} />
       </aside>
 
       {/* Mobile hamburger button — visible below lg */}
@@ -144,7 +147,7 @@ export function Sidebar() {
                 <X size={18} />
               </button>
             </div>
-            <SidebarContent isPro={isPro} pathname={pathname} />
+            <SidebarContent plan={plan} pathname={pathname} />
           </aside>
         </>
       )}

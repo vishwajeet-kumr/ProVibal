@@ -5,6 +5,7 @@ import { CheckoutStatus } from "@/components/checkout-status";
 import { UsageMeter } from "@/components/usage-meter";
 import { GenerationHistory } from "@/components/generation-history";
 import { SubscriptionCard } from "@/components/subscription-card";
+import { UserActivityStats } from "@/components/user-activity-stats";
 
 export const dynamic = "force-dynamic";
 
@@ -39,8 +40,11 @@ export default async function DashboardPage() {
           </Suspense>
         </div>
 
-        {/* Sidebar (Usage & Subscription) */}
+        {/* Sidebar (Stats, Usage & Subscription) */}
         <div className="flex flex-col gap-6">
+          {/* User Activity Stats */}
+          <UserActivityStats />
+
           <Suspense fallback={<div className="h-48 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] animate-pulse" />}>
             <UsageMeter />
           </Suspense>

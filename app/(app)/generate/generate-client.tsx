@@ -10,6 +10,7 @@ import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
 import { GenerationLoader } from "@/components/generation-loader";
 import { FollowUpCTA } from "@/components/follow-up-cta";
+import { OnboardingGuide, PostGenerationHint } from "@/components/onboarding-guide";
 import type { PromptKit, ProjectInput, FollowUpChain, IdeRulesBundle } from "@/features/generator/generator.types";
 
 interface ApiGenerateResponse {
@@ -137,6 +138,9 @@ function PostGenerationView({
             projectName={kit.projectName}
           />
         </div>
+
+        {/* Post-generation guidance hint */}
+        <PostGenerationHint hasFollowUps={kit.followUpChain !== null} />
 
         {kit.followUpChain === null && (
           <FollowUpCTA
@@ -299,6 +303,7 @@ export function GenerateClient() {
           </div>
         ) : kit === null ? (
           <div className="mx-auto max-w-2xl">
+            <OnboardingGuide />
             <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-8 shadow-sm">
               <GeneratorForm onSubmit={handleSubmit} isLoading={isLoading} />
             </div>
