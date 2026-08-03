@@ -10,7 +10,6 @@ import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
 import { GenerationLoader } from "@/components/generation-loader";
 import { FollowUpCTA } from "@/components/follow-up-cta";
-import { IdeRulesExport } from "@/components/ide-rules-export";
 import type { PromptKit, ProjectInput, FollowUpChain, IdeRulesBundle } from "@/features/generator/generator.types";
 
 interface ApiGenerateResponse {
@@ -127,16 +126,17 @@ function PostGenerationView({
               </span>
             </div>
           </div>
-          <PromptKitOutput kit={kit} isAuthenticated={!!userId} isPro={isPro} defaultTab={outputTab} />
+          <PromptKitOutput
+            kit={kit}
+            isAuthenticated={!!userId}
+            isPro={isPro}
+            defaultTab={outputTab}
+            ideRulesBundle={ideRulesBundle}
+            ideRulesLoading={ideRulesLoading}
+            onGenerateIdeRules={onGenerateIdeRules}
+            projectName={kit.projectName}
+          />
         </div>
-
-        <IdeRulesExport
-          bundle={ideRulesBundle}
-          isLoading={ideRulesLoading}
-          isPro={isPro}
-          projectName={kit.projectName}
-          onGenerate={onGenerateIdeRules}
-        />
 
         {kit.followUpChain === null && (
           <FollowUpCTA

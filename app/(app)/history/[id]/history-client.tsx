@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { PromptKitOutput } from "@/components/prompt-kit-output";
 import type { TabId } from "@/components/prompt-kit-output";
 import { FollowUpCTA } from "@/components/follow-up-cta";
-import { IdeRulesExport } from "@/components/ide-rules-export";
 import type { PromptKit, ProjectInput, FollowUpChain, IdeRulesBundle } from "@/features/generator/generator.types";
 
 interface ApiFollowUpResponse {
@@ -100,14 +99,15 @@ export function HistoryClient({
         </p>
       </div>
 
-      <PromptKitOutput kit={kit} isAuthenticated={!!userId} isPro={isPro} defaultTab={outputTab} />
-
-      <IdeRulesExport
-        bundle={ideRulesBundle}
-        isLoading={ideRulesLoading}
+      <PromptKitOutput
+        kit={kit}
+        isAuthenticated={!!userId}
         isPro={isPro}
+        defaultTab={outputTab}
+        ideRulesBundle={ideRulesBundle}
+        ideRulesLoading={ideRulesLoading}
+        onGenerateIdeRules={handleGenerateIdeRules}
         projectName={kit.projectName}
-        onGenerate={handleGenerateIdeRules}
       />
 
       {kit.followUpChain === null && (

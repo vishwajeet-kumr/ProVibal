@@ -1,18 +1,19 @@
 "use client";
 
-// components/prompt-kit-output.tsx — Tabbed output with section + full export — warm design system
+// components/prompt-kit-output.tsx — Tabbed output with consolidated export dropdown — warm design system
 
 import { useState, useEffect, useRef } from "react";
-import { FileText, Map, Layers, Zap, Download, ChevronDown, Clipboard, Check as CheckIcon, Lock } from "lucide-react";
-import type { PromptKit } from "@/features/generator/generator.types";
+import { FileText, Map, Layers, Zap, FileCode, Download, ChevronDown, Clipboard, Check as CheckIcon, Lock } from "lucide-react";
+import type { PromptKit, IdeRulesBundle } from "@/features/generator/generator.types";
 import type { SmartProtocolPrompt, ProtocolDifficulty } from "@/features/generator/generator.types";
 import { CopyButton } from "@/components/copy-button";
 import { PaywallGate } from "@/components/paywall-gate";
+import { IdeRulesExport } from "@/components/ide-rules-export";
 import { exportFullKit, exportAllFormats, exportSection, kitToCursorText } from "@/lib/export-kit";
 import type { SectionId } from "@/lib/export-kit";
 import { toast } from "sonner";
 
-export type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups";
+export type TabId = "foundation" | "project-map" | "build-sequence" | "follow-ups" | "ide-rules";
 
 interface Tab {
   readonly id: TabId;
@@ -21,10 +22,11 @@ interface Tab {
 }
 
 const TABS: readonly Tab[] = [
-  { id: "foundation",     label: "Foundation",     icon: <FileText size={14} /> },
-  { id: "project-map",   label: "Project Map",    icon: <Map size={14} /> },
-  { id: "build-sequence",label: "Build Sequence", icon: <Layers size={14} /> },
-  { id: "follow-ups",    label: "Protocol",      icon: <Zap size={14} /> },
+  { id: "foundation",      label: "Foundation",          icon: <FileText size={14} /> },
+  { id: "project-map",     label: "Project Map",         icon: <Map size={14} /> },
+  { id: "build-sequence",  label: "Build Sequence",      icon: <Layers size={14} /> },
+  { id: "follow-ups",      label: "Protocol",            icon: <Zap size={14} /> },
+  { id: "ide-rules",       label: "Export to IDE Rules",  icon: <FileCode size={14} /> },
 ] satisfies readonly Tab[];
 
 const FOUNDATION_SECTION_LABELS = {
@@ -40,6 +42,11 @@ interface PromptKitOutputProps {
   readonly isAuthenticated: boolean;
   readonly isPro: boolean;
   readonly defaultTab?: TabId;
+  // IDE Rules props (passed through to the IDE Rules tab)
+  readonly ideRulesBundle?: IdeRulesBundle | null;
+  readonly ideRulesLoading?: boolean;
+  readonly onGenerateIdeRules?: () => void;
+  readonly projectName?: string;
 }
 
 const sectionClass = "rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-5";
@@ -63,14 +70,27 @@ function DifficultyBadge({ difficulty }: { difficulty: ProtocolDifficulty }) {
   );
 }
 
-// ─── Copy Full Kit Button ────────────────────────────────────────────
+// ─── Consolidated Export Dropdown ─────────────────────────────────────
 
-function CopyFullKitButton({ kit, isPro }: { kit: PromptKit; isPro: boolean }) {
+function ExportDropdown({ kit, isPro, activeTab }: { kit: PromptKit; isPro: boolean; activeTab: TabId }) {
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
-  async function handleCopy() {
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function handleCopyFullKit() {
     if (!isPro) {
       toast.error("Upgrade to Pro to copy full kit", { description: "Export features are available on the Pro plan." });
+      setOpen(false);
       return;
     }
     try {
@@ -82,117 +102,22 @@ function CopyFullKitButton({ kit, isPro }: { kit: PromptKit; isPro: boolean }) {
     } catch {
       toast.error("Failed to copy kit");
     }
+    setOpen(false);
   }
 
-  return (
-    <button
-      onClick={handleCopy}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
-    >
-      {copied ? (
-        <>
-          <CheckIcon size={14} />
-          Copied!
-        </>
-      ) : isPro ? (
-        <>
-          <Clipboard size={14} />
-          Copy Full Kit
-        </>
-      ) : (
-        <>
-          <Lock size={14} />
-          Copy Full Kit
-        </>
-      )}
-    </button>
-  );
-}
-
-// ─── Section Export Button ───────────────────────────────────────────
-
-function SectionExportButton({ kit, section, isPro }: { kit: PromptKit; section: SectionId; isPro: boolean }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  function handleExport(format: "md" | "xml") {
+  function handleSectionExport(format: "md" | "xml") {
     if (!isPro) {
       toast.error("Upgrade to Pro to export sections", { description: "Export features are available on the Pro plan." });
       setOpen(false);
       return;
     }
-    exportSection(kit, section, format);
+    if (activeTab !== "ide-rules") {
+      exportSection(kit, activeTab as SectionId, format);
+    }
     setOpen(false);
   }
 
-  return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="inline-flex items-center gap-1 rounded-md border border-[var(--border)] px-2 py-1 text-xs font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
-        aria-label="Export section"
-      >
-        {isPro ? <Download size={12} /> : <Lock size={12} />}
-        <ChevronDown size={10} />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-32 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
-          <button
-            onClick={() => handleExport("md")}
-            className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
-          >
-            Export .md
-          </button>
-          <button
-            onClick={() => handleExport("xml")}
-            className="block w-full px-3 py-1.5 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
-          >
-            Export .xml
-          </button>
-          {!isPro && (
-            <>
-              <div className="my-1 border-t border-[var(--border)]" />
-              <a
-                href="/pricing"
-                className="block w-full px-3 py-1.5 text-left text-xs font-semibold text-[var(--accent)] hover:bg-[var(--accent-light)]"
-              >
-                Upgrade to Pro
-              </a>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─── Full Kit Export Dropdown ─────────────────────────────────────────
-
-function FullExportDropdown({ kit, isPro }: { kit: PromptKit; isPro: boolean }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  function handleExport(format: "md" | "xml" | "pdf") {
+  function handleFullExport(format: "md" | "xml" | "pdf") {
     if (!isPro) {
       toast.error("Upgrade to Pro to export kits", { description: "Export features are available on the Pro plan." });
       setOpen(false);
@@ -212,6 +137,8 @@ function FullExportDropdown({ kit, isPro }: { kit: PromptKit; isPro: boolean }) 
     setOpen(false);
   }
 
+  const sectionName = TABS.find(t => t.id === activeTab)?.label ?? "Section";
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -219,25 +146,62 @@ function FullExportDropdown({ kit, isPro }: { kit: PromptKit; isPro: boolean }) 
         className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-1.5 text-sm font-medium text-[var(--text-muted)] transition-colors hover:bg-[var(--accent-light)] hover:text-[var(--text-primary)]"
       >
         {isPro ? <Download size={14} /> : <Lock size={14} />}
-        Export Kit
+        Export
         <ChevronDown size={12} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-1 w-48 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+        <div className="absolute right-0 top-full z-20 mt-1 w-56 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] py-1 shadow-lg">
+          {/* Copy full kit */}
           <button
-            onClick={() => handleExport("md")}
+            onClick={handleCopyFullKit}
+            className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+          >
+            {copied ? <CheckIcon size={14} /> : <Clipboard size={14} />}
+            {copied ? "Copied!" : "Copy Full Kit"}
+          </button>
+
+          <div className="my-1 border-t border-[var(--border)]" />
+
+          {/* Section export — only when on a content tab (not ide-rules) */}
+          {activeTab !== "ide-rules" && (
+            <>
+              <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+                Export {sectionName}
+              </p>
+              <button
+                onClick={() => handleSectionExport("md")}
+                className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+              >
+                Export as .md
+              </button>
+              <button
+                onClick={() => handleSectionExport("xml")}
+                className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
+              >
+                Export as .xml
+              </button>
+              <div className="my-1 border-t border-[var(--border)]" />
+            </>
+          )}
+
+          {/* Full kit export */}
+          <p className="px-4 py-1 text-[10px] font-semibold uppercase tracking-widest text-[var(--text-muted)]">
+            Export Full Kit
+          </p>
+          <button
+            onClick={() => handleFullExport("md")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Download as .md
           </button>
           <button
-            onClick={() => handleExport("xml")}
+            onClick={() => handleFullExport("xml")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Download as .xml
           </button>
           <button
-            onClick={() => handleExport("pdf")}
+            onClick={() => handleFullExport("pdf")}
             className="block w-full px-4 py-2 text-left text-sm text-[var(--text-primary)] hover:bg-[var(--accent-light)]"
           >
             Save as PDF
@@ -385,7 +349,6 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
     </div>
   );
 
-  // Check if this is a Smart Protocol chain (has difficulty field)
   const isSmartProtocol =
     kit.followUpChain !== null &&
     kit.followUpChain.prompts.length > 0 &&
@@ -448,7 +411,16 @@ function FollowUpsTab({ kit, isAuthenticated }: { kit: PromptKit; isAuthenticate
 
 // ─── Main component ──────────────────────────────────────────────────
 
-export function PromptKitOutput({ kit, isAuthenticated, isPro, defaultTab }: PromptKitOutputProps) {
+export function PromptKitOutput({
+  kit,
+  isAuthenticated,
+  isPro,
+  defaultTab,
+  ideRulesBundle,
+  ideRulesLoading,
+  onGenerateIdeRules,
+  projectName,
+}: PromptKitOutputProps) {
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab ?? "foundation");
 
   useEffect(() => {
@@ -457,7 +429,7 @@ export function PromptKitOutput({ kit, isAuthenticated, isPro, defaultTab }: Pro
 
   return (
     <div className="flex flex-col">
-      {/* Tab bar + export controls */}
+      {/* Tab bar + consolidated export dropdown */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-[var(--border)] bg-[var(--bg-card)] pb-0">
         <div className="flex overflow-x-auto">
           {TABS.map((tab) => {
@@ -479,11 +451,9 @@ export function PromptKitOutput({ kit, isAuthenticated, isPro, defaultTab }: Pro
           })}
         </div>
 
-        {/* Export controls — right side */}
+        {/* Single consolidated Export dropdown */}
         <div className="flex items-center gap-2 px-4 pb-3 sm:pb-0">
-          <CopyFullKitButton kit={kit} isPro={isPro} />
-          <SectionExportButton kit={kit} section={activeTab as SectionId} isPro={isPro} />
-          <FullExportDropdown kit={kit} isPro={isPro} />
+          <ExportDropdown kit={kit} isPro={isPro} activeTab={activeTab} />
         </div>
       </div>
 
@@ -493,6 +463,15 @@ export function PromptKitOutput({ kit, isAuthenticated, isPro, defaultTab }: Pro
         {activeTab === "project-map"    && <ProjectMapTab kit={kit} />}
         {activeTab === "build-sequence" && <BuildSequenceTab kit={kit} />}
         {activeTab === "follow-ups"     && <FollowUpsTab kit={kit} isAuthenticated={isAuthenticated} />}
+        {activeTab === "ide-rules"      && (
+          <IdeRulesExport
+            bundle={ideRulesBundle ?? null}
+            isLoading={ideRulesLoading ?? false}
+            isPro={isPro}
+            projectName={projectName ?? kit.projectName}
+            onGenerate={onGenerateIdeRules ?? (() => {})}
+          />
+        )}
       </div>
     </div>
   );

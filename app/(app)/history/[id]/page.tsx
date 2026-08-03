@@ -56,11 +56,11 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
     <div className="mx-auto max-w-7xl">
       <div className="mb-6">
         <Link 
-          href="/dashboard" 
+          href="/history" 
           className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
         >
           <ChevronLeft size={16} />
-          Back to Dashboard
+          Back to History
         </Link>
       </div>
       
