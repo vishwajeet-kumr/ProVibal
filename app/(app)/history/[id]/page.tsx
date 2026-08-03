@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect, notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
-import type { PromptKit, ProjectInput } from "@/features/generator/generator.types";
+import type { PromptKit, ProjectInput, IdeRulesBundle } from "@/features/generator/generator.types";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { HistoryClient } from "./history-client";
@@ -49,6 +49,9 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
     description: data.description,
   };
 
+  // Load saved IDE rules if they exist
+  const savedIdeRules: IdeRulesBundle | null = data.ide_rules ?? null;
+
   return (
     <div className="mx-auto max-w-7xl">
       <div className="mb-6">
@@ -61,7 +64,12 @@ export default async function HistoryKitPage({ params }: { params: Promise<{ id:
         </Link>
       </div>
       
-      <HistoryClient initialKit={promptKit} userId={userId} projectInput={projectInput} />
+      <HistoryClient
+        initialKit={promptKit}
+        userId={userId}
+        projectInput={projectInput}
+        savedIdeRules={savedIdeRules}
+      />
     </div>
   );
 }

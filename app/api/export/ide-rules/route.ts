@@ -1,9 +1,10 @@
-// app/api/export/ide-rules/route.ts — POST: auth → Pro-only → generate IDE rule files
+// app/api/export/ide-rules/route.ts — POST: auth → Pro-only → generate IDE rule files → save to DB
 
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getUserEntitlementsFromClaims } from "@/lib/entitlements";
 import { generateIdeRules } from "@/features/generator/generator.service";
+import { supabaseAdmin } from "@/lib/supabase";
 import { successResponse, errorResponse } from "@/types/api";
 import { AppError } from "@/lib/errors";
 
@@ -39,7 +40,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       );
     }
 
-    const { input, kit } = body as { input: unknown; kit: unknown };
+    const { input, kit, generationId } = body as {
+      input: unknown;
+      kit: unknown;
+      generationId?: string;
+    };
 
     if (!input || typeof input !== "object") {
       return NextResponse.json(
@@ -57,6 +62,16 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ideRules = await generateIdeRules(input as any, kit as any);
+
+    // Persist to database if we have a generation ID
+    const kitId = generationId || (kit as Record<string, unknown>).id;
+    if (kitId && typeof kitId === "string") {
+      await supabaseAdmin
+        .from("generations")
+        .update({ ide_rules: ideRules })
+        .eq("id", kitId)
+        .eq("user_id", userId);
+    }
 
     return NextResponse.json(successResponse(ideRules), { status: 200 });
   } catch (error: unknown) {

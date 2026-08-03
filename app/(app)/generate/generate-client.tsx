@@ -255,7 +255,7 @@ export function GenerateClient() {
       const response = await fetch("/api/export/ide-rules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: currentFormData, kit }),
+        body: JSON.stringify({ input: currentFormData, kit, generationId: kit.id }),
       });
       const json = (await response.json()) as ApiIdeRulesResponse;
       if (json.status === "success" && json.data) {

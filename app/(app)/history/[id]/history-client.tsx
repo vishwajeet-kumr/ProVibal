@@ -25,16 +25,18 @@ export function HistoryClient({
   initialKit,
   userId,
   projectInput,
+  savedIdeRules,
 }: {
   initialKit: PromptKit;
   userId: string;
   projectInput: ProjectInput;
+  savedIdeRules: IdeRulesBundle | null;
 }) {
   const { user } = useUser();
   const isPro = (user?.publicMetadata as Record<string, unknown> | undefined)?.plan === "pro";
   const [kit, setKit] = useState<PromptKit>(initialKit);
   const [followUpLoading, setFollowUpLoading] = useState(false);
-  const [ideRulesBundle, setIdeRulesBundle] = useState<IdeRulesBundle | null>(null);
+  const [ideRulesBundle, setIdeRulesBundle] = useState<IdeRulesBundle | null>(savedIdeRules);
   const [ideRulesLoading, setIdeRulesLoading] = useState(false);
   const [outputTab, setOutputTab] = useState<TabId>("foundation");
 
@@ -67,7 +69,11 @@ export function HistoryClient({
       const response = await fetch("/api/export/ide-rules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input: projectInput, kit }),
+        body: JSON.stringify({
+          input: projectInput,
+          kit,
+          generationId: kit.id,
+        }),
       });
       const json = (await response.json()) as ApiIdeRulesResponse;
       if (json.status === "success" && json.data) {

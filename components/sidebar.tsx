@@ -10,6 +10,7 @@ import {
   History, 
   CreditCard, 
   Settings,
+  Mail,
   ArrowUpRight,
   Menu,
   X,
@@ -21,6 +22,7 @@ const NAV_ITEMS = [
   { label: "History", href: "/history", icon: History },
   { label: "Billing", href: "/billing", icon: CreditCard },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Contact", href: "/contact", icon: Mail },
 ];
 
 function SidebarContent({ isPro, pathname }: { isPro: boolean; pathname: string }) {

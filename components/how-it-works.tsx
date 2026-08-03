@@ -119,16 +119,12 @@ export function HowItWorksSection() {
         </div>
 
         {/* Steps grid */}
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-8">
+        <div className="grid grid-cols-1 gap-12 sm:grid-cols-3 sm:gap-8 sm:items-start">
           {STEPS.map((step, i) => (
             <Step key={step.number} index={i} {...step} />
           ))}
         </div>
 
-        {/* Connector line (desktop only) */}
-        <div className="relative -mt-[140px] mb-[140px] hidden sm:block">
-          <div className="absolute left-[calc(16.67%+32px)] right-[calc(16.67%+32px)] top-1/2 h-px bg-gradient-to-r from-[var(--accent)]/30 via-[var(--accent)]/50 to-[var(--accent)]/30" />
-        </div>
       </div>
     </section>
   );
