@@ -9,6 +9,8 @@ const envSchema = z.object({
   DODO_PAYMENTS_API_KEY: z.string().min(1, "DODO_PAYMENTS_API_KEY is required"),
   DODO_WEBHOOK_SECRET: z.string().min(1, "DODO_WEBHOOK_SECRET is required"),
   DODO_PRO_PRODUCT_ID: z.string().min(1, "DODO_PRO_PRODUCT_ID is required"),
+  DODO_PRO_ANNUAL_PRODUCT_ID: z.string().min(1, "DODO_PRO_ANNUAL_PRODUCT_ID is required"),
+  DODO_STARTER_PRODUCT_ID: z.string().min(1, "DODO_STARTER_PRODUCT_ID is required"),
   DODO_REFILL_PRODUCT_ID: z.string().min(1, "DODO_REFILL_PRODUCT_ID is required"),
   DODO_ENVIRONMENT: z.enum(["test_mode", "live_mode"]),
   PAYMENTS_ENABLED: z.enum(["true", "false"]).default("true"),

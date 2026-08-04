@@ -74,12 +74,10 @@ export async function POST(request: Request): Promise<NextResponse> {
         productId = env.DODO_PRO_PRODUCT_ID;
         break;
       case "pro_annual_subscription":
-        // Use annual product ID if available, fallback to monthly
-        productId = (env as Record<string, string>).DODO_PRO_ANNUAL_PRODUCT_ID ?? env.DODO_PRO_PRODUCT_ID;
+        productId = env.DODO_PRO_ANNUAL_PRODUCT_ID;
         break;
       case "starter_pass":
-        // Use starter product ID if available, fallback to refill
-        productId = (env as Record<string, string>).DODO_STARTER_PRODUCT_ID ?? env.DODO_REFILL_PRODUCT_ID;
+        productId = env.DODO_STARTER_PRODUCT_ID;
         break;
       case "refill_pack":
         productId = env.DODO_REFILL_PRODUCT_ID;
