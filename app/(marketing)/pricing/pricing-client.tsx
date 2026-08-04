@@ -33,7 +33,6 @@ const PRO_FEATURES = [
   "Unlimited project generations",
   "Unlimited Protocol runs",
   "IDE rules export (.cursorrules / .windsurfrules / AGENTS.md)",
-  "Priority generation speed",
   "Buy refills for top-ups",
 ] as const;
 
@@ -86,9 +85,8 @@ function BillingToggle({
   return (
     <div className="flex items-center justify-center gap-3">
       <span
-        className={`text-sm font-medium transition-colors ${
-          !isAnnual ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
-        }`}
+        className={`text-sm font-medium transition-colors ${!isAnnual ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
+          }`}
       >
         Monthly
       </span>
@@ -102,18 +100,16 @@ function BillingToggle({
         aria-label="Toggle annual billing"
       >
         <span
-          className={`inline-block h-5 w-5 transform rounded-full shadow-sm transition-transform duration-200 ${
-            isAnnual
+          className={`inline-block h-5 w-5 transform rounded-full shadow-sm transition-transform duration-200 ${isAnnual
               ? "translate-x-6 bg-[var(--accent)]"
               : "translate-x-0.5 bg-[var(--text-muted)]"
-          }`}
+            }`}
         />
       </button>
 
       <span
-        className={`text-sm font-medium transition-colors ${
-          isAnnual ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
-        }`}
+        className={`text-sm font-medium transition-colors ${isAnnual ? "text-[var(--text-primary)]" : "text-[var(--text-muted)]"
+          }`}
       >
         Annual
       </span>
@@ -310,7 +306,7 @@ export function PricingClient({
             isHighlighted={false}
             isComingSoon={true}
             ctaLabel="Coming Soon"
-            onCtaClick={() => {}}
+            onCtaClick={() => { }}
           />
         </div>
 
